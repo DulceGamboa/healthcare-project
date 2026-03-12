@@ -1,23 +1,207 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Historial Clínico</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historial Clínico — MediPlus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-<header>
-    <h1>Historial Clínico</h1>
-</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
 
-<main>
-    <ul>
-        <li>Diabetes tipo 2</li>
-        <li>Hipertensión</li>
-        <li>Asma</li>
-    </ul>
-</main>
+  <main class="main">
+    <div class="page-header">
+      <h1>📋 Historial Clínico</h1>
+      <p>Resumen completo de toda la información médica registrada</p>
+    </div>
 
+    <!-- STATS RAPIDOS -->
+    <div class="stats-grid" id="historyStats">
+      <div class="stat-card">
+        <div class="stat-icon">💊</div>
+        <div class="stat-number" id="countDiseases">—</div>
+        <div class="stat-label">Enfermedades</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-number" id="countAppointments">—</div>
+        <div class="stat-label">Citas Médicas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔬</div>
+        <div class="stat-number" id="countSurgeries">—</div>
+        <div class="stat-label">Cirugías</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏃</div>
+        <div class="stat-number" id="countRehabs">—</div>
+        <div class="stat-label">Rehabilitaciones</div>
+      </div>
+    </div>
+
+    <!-- ENFERMEDADES -->
+    <div class="card mb-6">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:0;">💊 Enfermedades Registradas</div>
+        <a href="diseases.html" class="btn btn-ghost btn-sm">Ver todas →</a>
+      </div>
+      <div id="diseasesContainer">
+        <div style="text-align:center;padding:20px;"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- CITAS -->
+    <div class="card mb-6">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:0;">📅 Citas Médicas</div>
+        <a href="appointments.html" class="btn btn-ghost btn-sm">Ver todas →</a>
+      </div>
+      <div id="appointmentsContainer">
+        <div style="text-align:center;padding:20px;"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- CIRUGIAS -->
+    <div class="card mb-6">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:0;">🔬 Cirugías</div>
+        <a href="surgery.html" class="btn btn-ghost btn-sm">Ver todas →</a>
+      </div>
+      <div id="surgeriesContainer">
+        <div style="text-align:center;padding:20px;"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- REHABILITACION -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:0;">🏃 Rehabilitaciones</div>
+        <a href="rehabilitation.html" class="btn btn-ghost btn-sm">Ver todas →</a>
+      </div>
+      <div id="rehabsContainer">
+        <div style="text-align:center;padding:20px;"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/app.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('No auth');
+  document.getElementById('sidebar').innerHTML = renderSidebar('history');
+
+  const statusColors = {
+    'Pendiente':    'badge-yellow',
+    'Confirmada':   'badge-blue',
+    'Completada':   'badge-green',
+    'Cancelada':    'badge-red',
+    'Iniciado':     'badge-blue',
+    'En progreso':  'badge-yellow',
+    'Suspendido':   'badge-red',
+  };
+
+  function emptyState(icon, text) {
+    return `<div class="empty-state" style="padding:24px 20px;">
+      <div class="empty-icon" style="font-size:36px;">${icon}</div>
+      <p style="font-size:14px;">${text}</p>
+    </div>`;
+  }
+
+  async function loadAll() {
+    try {
+      // Cargar todo en paralelo
+      const [diseases, appointments, surgeries, rehabs] = await Promise.all([
+        authFetch(`${API}/diseases`).then(r => r.json()).catch(() => []),
+        authFetch(`${API}/appointments`).then(r => r.json()).catch(() => []),
+        authFetch(`${API}/surgeries`).then(r => r.json()).catch(() => []),
+        authFetch(`${API}/rehabilitations`).then(r => r.json()).catch(() => []),
+      ]);
+
+      // Actualizar contadores
+      document.getElementById('countDiseases').textContent     = diseases.length;
+      document.getElementById('countAppointments').textContent = appointments.length;
+      document.getElementById('countSurgeries').textContent    = surgeries.length;
+      document.getElementById('countRehabs').textContent       = rehabs.length;
+
+      // ENFERMEDADES
+      document.getElementById('diseasesContainer').innerHTML = diseases.length
+        ? `<div class="table-wrap"><table>
+            <thead><tr><th>#</th><th>Enfermedad</th><th>Paciente</th></tr></thead>
+            <tbody>
+              ${diseases.map(d => `
+                <tr>
+                  <td>#${d.id}</td>
+                  <td>${d.diseaseName || '—'}</td>
+                  <td>${d.user ? d.user.name : '—'}</td>
+                </tr>`).join('')}
+            </tbody>
+           </table></div>`
+        : emptyState('💊', 'No hay enfermedades registradas');
+
+      // CITAS
+      document.getElementById('appointmentsContainer').innerHTML = appointments.length
+        ? `<div class="table-wrap"><table>
+            <thead><tr><th>#</th><th>Motivo</th><th>Fecha</th><th>Estado</th><th>Paciente</th></tr></thead>
+            <tbody>
+              ${appointments.map(a => `
+                <tr>
+                  <td>#${a.id}</td>
+                  <td>${a.reason || '—'}</td>
+                  <td>${a.appointmentDate || '—'}</td>
+                  <td><span class="badge ${statusColors[a.status] || 'badge-purple'}">${a.status || '—'}</span></td>
+                  <td>${a.user ? a.user.name : '—'}</td>
+                </tr>`).join('')}
+            </tbody>
+           </table></div>`
+        : emptyState('📅', 'No hay citas registradas');
+
+      // CIRUGIAS
+      document.getElementById('surgeriesContainer').innerHTML = surgeries.length
+        ? `<div class="table-wrap"><table>
+            <thead><tr><th>#</th><th>Tipo</th><th>Fecha</th><th>Notas</th><th>Paciente</th></tr></thead>
+            <tbody>
+              ${surgeries.map(s => `
+                <tr>
+                  <td>#${s.id}</td>
+                  <td>${s.surgeryType || '—'}</td>
+                  <td>${s.surgeryDate || '—'}</td>
+                  <td>${s.notes || '—'}</td>
+                  <td>${s.user ? s.user.name : '—'}</td>
+                </tr>`).join('')}
+            </tbody>
+           </table></div>`
+        : emptyState('🔬', 'No hay cirugías registradas');
+
+      // REHABILITACION
+      document.getElementById('rehabsContainer').innerHTML = rehabs.length
+        ? `<div class="table-wrap"><table>
+            <thead><tr><th>#</th><th>Terapia</th><th>Inicio</th><th>Fin</th><th>Progreso</th><th>Paciente</th></tr></thead>
+            <tbody>
+              ${rehabs.map(r => `
+                <tr>
+                  <td>#${r.id}</td>
+                  <td>${r.therapyType || '—'}</td>
+                  <td>${r.startDate || '—'}</td>
+                  <td>${r.endDate || '—'}</td>
+                  <td><span class="badge ${statusColors[r.progress] || 'badge-purple'}">${r.progress || '—'}</span></td>
+                  <td>${r.user ? r.user.name : '—'}</td>
+                </tr>`).join('')}
+            </tbody>
+           </table></div>`
+        : emptyState('🏃', 'No hay rehabilitaciones registradas');
+
+    } catch(e) {
+      showToast('Error al cargar el historial. ¿El servidor está corriendo?', 'error');
+    }
+  }
+
+  loadAll();
+</script>
 </body>
 </html>

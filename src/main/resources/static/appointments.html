@@ -1,24 +1,205 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Citas Médicas</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citas Médicas — MediPlus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-<header>
-    <h1>Citas Médicas</h1>
-</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
 
-<main>
-    <p>Próxima cita:</p>
-    <div class="alert">
-        <strong>Consulta General</strong><br>
-        Fecha: 20/03/2026<br>
-        Hora: 9:00 a.m.
+  <main class="main">
+    <div class="page-header flex items-center justify-between">
+      <div>
+        <h1>📅 Citas Médicas</h1>
+        <p>Gestión de citas y consultas médicas</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal()">+ Nueva Cita</button>
     </div>
-</main>
 
+    <div class="card">
+      <div id="tableContainer">
+        <div style="text-align:center;padding:40px;">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">📅 Nueva Cita</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Motivo de la cita</label>
+      <input type="text" class="form-input" id="fReason" placeholder="Ej: Consulta general, Control de diabetes...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha de la cita</label>
+      <input type="date" class="form-input" id="fDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Estado</label>
+      <select class="form-input" id="fStatus">
+        <option value="Pendiente">Pendiente</option>
+        <option value="Confirmada">Confirmada</option>
+        <option value="Completada">Completada</option>
+        <option value="Cancelada">Cancelada</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Paciente</label>
+      <select class="form-input" id="fUserId">
+        <option value="">Selecciona un paciente...</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-primary w-full" onclick="saveAppointment()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/app.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('No auth');
+  document.getElementById('sidebar').innerHTML = renderSidebar('appointments');
+
+  const statusColors = {
+    'Pendiente':  'badge-yellow',
+    'Confirmada': 'badge-blue',
+    'Completada': 'badge-green',
+    'Cancelada':  'badge-red',
+  };
+
+  async function loadAppointments() {
+    try {
+      const res          = await authFetch(`${API}/appointments`);
+      const appointments = await res.json();
+
+      if (!appointments.length) {
+        document.getElementById('tableContainer').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <h3>Sin citas registradas</h3>
+            <p>Agrega la primera con el botón "Nueva Cita"</p>
+          </div>`;
+        return;
+      }
+
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Motivo</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Paciente</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${appointments.map(a => `
+                <tr>
+                  <td>#${a.id}</td>
+                  <td>${a.reason || '—'}</td>
+                  <td>${a.appointmentDate || '—'}</td>
+                  <td><span class="badge ${statusColors[a.status] || 'badge-purple'}">${a.status || '—'}</span></td>
+                  <td>${a.user ? a.user.name : '—'}</td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAppointment(${a.id})">🗑 Eliminar</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    } catch {
+      showToast('Error al cargar citas', 'error');
+    }
+  }
+
+  async function loadPatients() {
+    try {
+      const res   = await authFetch(`${API}/users`);
+      const users = await res.json();
+      const sel   = document.getElementById('fUserId');
+      sel.innerHTML = '<option value="">Selecciona un paciente...</option>';
+      users.forEach(u => {
+        const opt       = document.createElement('option');
+        opt.value       = u.id;
+        opt.textContent = `${u.name} (ID: ${u.id})`;
+        sel.appendChild(opt);
+      });
+    } catch {
+      showToast('Error al cargar pacientes', 'error');
+    }
+  }
+
+  function openModal() {
+    document.getElementById('fReason').value = '';
+    document.getElementById('fDate').value   = '';
+    document.getElementById('fStatus').value = 'Pendiente';
+    document.getElementById('fUserId').value = '';
+    loadPatients();
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+  }
+
+  async function saveAppointment() {
+    const reason          = document.getElementById('fReason').value.trim();
+    const appointmentDate = document.getElementById('fDate').value;
+    const status          = document.getElementById('fStatus').value;
+    const userId          = document.getElementById('fUserId').value;
+
+    if (!reason || !appointmentDate || !userId) return showToast('Completa todos los campos', 'error');
+
+    try {
+      const res = await authFetch(`${API}/appointments`, {
+        method: 'POST',
+        body: JSON.stringify({
+          reason,
+          appointmentDate,
+          status,
+          user: { id: parseInt(userId) }
+        })
+      });
+      if (!res.ok) throw new Error('Error al guardar');
+      showToast('Cita guardada correctamente');
+      closeModal();
+      loadAppointments();
+    } catch(e) {
+      showToast(e.message, 'error');
+    }
+  }
+
+  async function deleteAppointment(id) {
+    if (!confirm('¿Eliminar esta cita?')) return;
+    try {
+      await authFetch(`${API}/appointments/${id}`, { method: 'DELETE' });
+      showToast('Cita eliminada');
+      loadAppointments();
+    } catch {
+      showToast('Error al eliminar', 'error');
+    }
+  }
+
+  loadAppointments();
+</script>
 </body>
 </html>

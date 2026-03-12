@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nutrición — MediPlus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="main">
+    <div class="page-header">
+      <h1>🥗 Dieta y Nutrición</h1>
+      <p>Plan alimenticio personalizado generado con Inteligencia Artificial</p>
+    </div>
+
+    <!-- ACCESOS RAPIDOS -->
+    <div class="card mb-6">
+      <div class="card-title">Condiciones frecuentes — clic para seleccionar</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="setCondition('Diabetes tipo 2')">🩸 Diabetes tipo 2</button>
+        <button class="btn btn-ghost btn-sm" onclick="setCondition('Hipertensión arterial')">❤️ Hipertensión</button>
+        <button class="btn btn-ghost btn-sm" onclick="setCondition('Hipotiroidismo')">🦋 Hipotiroidismo</button>
+        <button class="btn btn-ghost btn-sm" onclick="setCondition('Anemia ferropénica')">💉 Anemia</button>
+        <button class="btn btn-ghost btn-sm" onclick="setCondition('Celiaquía')">🌾 Celiaquía</button>
+        <button class="btn btn-ghost btn-sm" onclick="setCondition('Síndrome de colon irritable')">🫁 Colon irritable</button>
+        <button class="btn btn-ghost btn-sm" onclick="setCondition('Obesidad')">⚖️ Obesidad</button>
+        <button class="btn btn-ghost btn-sm" onclick="setCondition('Colesterol alto')">🧪 Colesterol alto</button>
+      </div>
+    </div>
+
+    <!-- FORMULARIO IA -->
+    <div class="card mb-6">
+      <div class="card-title">🤖 Generar Plan de Dieta con IA</div>
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Condición médica o enfermedad</label>
+          <input type="text" class="form-input" id="aiCondition"
+            placeholder="Ej: Diabetes tipo 2, Hipertensión...">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Restricciones adicionales (opcional)</label>
+          <input type="text" class="form-input" id="aiRestrictions"
+            placeholder="Ej: vegetariano, sin gluten, sin lactosa...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Objetivo nutricional (opcional)</label>
+        <select class="form-input" id="aiGoal">
+          <option value="equilibrada">Alimentación equilibrada</option>
+          <option value="bajar peso">Bajar de peso</option>
+          <option value="subir peso">Subir de peso</option>
+          <option value="control glucémico">Control glucémico</option>
+          <option value="reducir inflamación">Reducir inflamación</option>
+        </select>
+      </div>
+      <button class="btn btn-teal" id="aiBtn" onclick="generateDiet()">
+        🥗 Generar Plan de Dieta con IA
+      </button>
+    </div>
+
+    <!-- RESULTADO IA -->
+    <div id="aiResult" style="display:none;">
+      <div class="card">
+        <div class="ai-result">
+          <div class="ai-result-header">🥗 Plan Nutricional Personalizado — <span id="aiConditionLabel"></span></div>
+          <div class="ai-result-body" id="aiResultBody"></div>
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-ghost btn-sm" onclick="generateDiet()">🔄 Regenerar plan</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/app.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('No auth');
+  document.getElementById('sidebar').innerHTML = renderSidebar('nutrition');
+
+  function setCondition(condition) {
+    document.getElementById('aiCondition').value = condition;
+    document.getElementById('aiCondition').focus();
+  }
+
+  async function generateDiet() {
+    const condition    = document.getElementById('aiCondition').value.trim();
+    const restrictions = document.getElementById('aiRestrictions').value.trim();
+    const goal         = document.getElementById('aiGoal').value;
+
+    if (!condition) return showToast('Ingresa una condición médica', 'error');
+
+    const btn = document.getElementById('aiBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></div> Generando plan...';
+    document.getElementById('aiResult').style.display = 'none';
+
+    try {
+      const systemPrompt = `Eres un nutricionista clínico especialista. Genera planes alimenticios personalizados, seguros y basados en evidencia médica. Responde siempre en español con formato claro y estructurado usando secciones bien definidas.`;
+
+      const userPrompt = `Genera un plan de dieta completo y personalizado para:
+- Condición médica: ${condition}
+- Objetivo nutricional: ${goal}
+${restrictions ? `- Restricciones: ${restrictions}` : ''}
+
+Incluye las siguientes secciones:
+1. Descripción general del plan
+2. Alimentos recomendados (lista detallada)
+3. Alimentos a evitar (lista detallada)
+4. Plan de comidas sugerido (desayuno, media mañana, almuerzo, merienda, cena)
+5. Consejos y recomendaciones importantes
+6. Advertencias o consideraciones médicas`;
+
+      const result = await askOpenAI(systemPrompt, userPrompt);
+      document.getElementById('aiConditionLabel').textContent = condition;
+      document.getElementById('aiResultBody').textContent     = result;
+      document.getElementById('aiResult').style.display       = 'block';
+      showToast('Plan nutricional generado exitosamente');
+    } catch(e) {
+      showToast('Error al generar plan. Verifica tu API key de OpenAI en app.js', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '🥗 Generar Plan de Dieta con IA';
+    }
+  }
+</script>
+</body>
+</html>

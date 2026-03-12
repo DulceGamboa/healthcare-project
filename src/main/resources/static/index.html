@@ -1,16 +1,364 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Plataforma de Acompañamiento Médico</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediPlus — Plataforma Médica</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #8b5cf6; --purple-light: #a78bfa;
+      --teal: #0891b2; --teal-light: #22d3ee;
+      --pink: #ec4899;
+      --bg: #f8f5ff; --surface: #ffffff; --surface2: #f3f0ff;
+      --border: #e5dff8;
+      --text: #1e1438; --text-soft: #5b5080; --text-muted: #9d94bc;
+      --grad-main: linear-gradient(135deg, #8b5cf6 0%, #0891b2 100%);
+      --grad-soft: linear-gradient(135deg, #ede9fe 0%, #e0f7fa 100%);
+      --shadow-sm: 0 2px 8px rgba(139,92,246,0.08);
+      --shadow-md: 0 8px 24px rgba(139,92,246,0.12);
+      --shadow-lg: 0 20px 48px rgba(139,92,246,0.16);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 0 60px; height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(248,245,255,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-logo img { height: 48px; object-fit: contain; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-link-item { font-size: 14px; font-weight: 600; color: var(--text-soft); text-decoration: none; transition: color 0.2s; }
+    .nav-link-item:hover { color: var(--purple); }
+    .nav-btn {
+      background: var(--grad-main); color: white;
+      padding: 10px 24px; border-radius: 12px;
+      text-decoration: none; font-size: 14px; font-weight: 700;
+      box-shadow: 0 4px 14px rgba(139,92,246,0.3);
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139,92,246,0.4); }
+
+    /* HERO */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center;
+      overflow: hidden;
+    }
+    .hero-bg { position: absolute; inset: 0; }
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(105deg, rgba(15,5,40,0.85) 0%, rgba(15,5,40,0.5) 55%, rgba(8,145,178,0.2) 100%);
+    }
+    .hero-content { position: relative; z-index: 2; padding: 140px 60px 100px; max-width: 760px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px); border-radius: 20px;
+      padding: 7px 18px; font-size: 13px; font-weight: 600;
+      color: rgba(255,255,255,0.9); margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(44px, 5.5vw, 72px);
+      line-height: 1.08; color: white; margin-bottom: 24px;
+    }
+    .hero h1 em { font-style: italic; color: #22d3ee; }
+    .hero p {
+      font-size: 18px; line-height: 1.75;
+      color: rgba(255,255,255,0.78);
+      max-width: 560px; margin-bottom: 40px; font-weight: 300;
+    }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-white {
+      background: white; color: var(--purple);
+      padding: 14px 32px; border-radius: 12px;
+      font-size: 15px; font-weight: 700;
+      text-decoration: none; display: inline-block;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      transition: all 0.2s;
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
+    .btn-outline-white {
+      background: transparent; color: white;
+      padding: 14px 32px; border-radius: 12px;
+      font-size: 15px; font-weight: 600;
+      text-decoration: none; display: inline-block;
+      border: 1.5px solid rgba(255,255,255,0.5);
+      transition: all 0.2s;
+    }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.1); border-color: white; }
+
+    /* TRUST STRIP */
+    .trust {
+      background: white; border-bottom: 1px solid var(--border);
+      padding: 36px 60px;
+      display: flex; justify-content: center; gap: 72px; flex-wrap: wrap;
+    }
+    .trust-item { text-align: center; }
+    .trust-num {
+      font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 700;
+      background: var(--grad-main);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1;
+    }
+    .trust-label { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* SECTIONS */
+    .section { padding: 100px 60px; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .eyebrow { font-size: 12px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 14px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: clamp(32px, 3.5vw, 50px); line-height: 1.1; margin-bottom: 18px; }
+    .section-title em { font-style: italic; background: var(--grad-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .section-sub { font-size: 16px; color: var(--text-soft); line-height: 1.75; max-width: 580px; }
+
+    /* SERVICES */
+    .services-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-top: 56px; }
+    .service-card { background: white; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: all 0.3s; }
+    .service-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--purple-light); }
+    .service-img { width: 100%; height: 200px; object-fit: cover; }
+    .service-body { padding: 28px; }
+    .service-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+    .service-body h3 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 10px; }
+    .service-body p { font-size: 14px; color: var(--text-soft); line-height: 1.7; }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .about-img-wrap { position: relative; }
+    .about-img { width: 100%; border-radius: 20px; object-fit: cover; height: 520px; box-shadow: var(--shadow-lg); }
+    .about-badge {
+      position: absolute; bottom: -24px; right: -24px;
+      background: white; border: 1px solid var(--border);
+      border-radius: 16px; padding: 20px 24px; box-shadow: var(--shadow-md);
+    }
+    .about-badge-num {
+      font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 700;
+      background: var(--grad-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1;
+    }
+    .about-badge-lbl { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-top: 2px; }
+    .about-text h2 { font-family: 'Playfair Display', serif; font-size: clamp(30px, 3vw, 46px); line-height: 1.15; margin-bottom: 20px; }
+    .about-text p { font-size: 15px; color: var(--text-soft); line-height: 1.8; margin-bottom: 18px; }
+    .about-checks { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+    .about-check { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; color: var(--text-soft); font-weight: 600; }
+    .check-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--grad-soft); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+
+    /* HOW IT WORKS */
+    .how-bg { background: linear-gradient(135deg, #0f0528 0%, #0c1a3a 100%); }
+    .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 32px; margin-top: 56px; }
+    .step { text-align: center; }
+    .step-num {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(139,92,246,0.2); border: 1px solid rgba(139,92,246,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700;
+      color: var(--purple-light); margin: 0 auto 20px;
+    }
+    .step h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: white; margin-bottom: 10px; }
+    .step p { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.7; }
+
+    /* CTA */
+    .cta-banner {
+      background: var(--grad-main); border-radius: 24px; padding: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 40px; flex-wrap: wrap;
+    }
+    .cta-banner h2 { font-family: 'Playfair Display', serif; font-size: clamp(26px, 3vw, 42px); color: white; }
+    .cta-banner p { font-size: 15px; color: rgba(255,255,255,0.75); margin-top: 10px; max-width: 480px; line-height: 1.7; }
+    .btn-cta {
+      background: white; color: var(--purple); padding: 14px 32px;
+      border-radius: 12px; font-size: 15px; font-weight: 700;
+      text-decoration: none; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: all 0.2s;
+    }
+    .btn-cta:hover { transform: translateY(-2px); }
+
+    /* FOOTER */
+    .footer { background: #0f0528; padding: 72px 60px 40px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; max-width: 1200px; margin: 0 auto; }
+    .footer-brand p { font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.75; margin-top: 16px; max-width: 300px; }
+    .footer-col h4 { font-size: 13px; font-weight: 700; color: white; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .footer-col a { display: block; font-size: 14px; color: rgba(255,255,255,0.45); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--purple-light); }
+    .footer-bottom { max-width: 1200px; margin: 48px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-bottom span { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+    @media (max-width: 900px) {
+      nav { padding: 0 24px; }
+      .section { padding: 60px 24px; }
+      .services-grid, .steps { grid-template-columns: 1fr; }
+      .about-grid { grid-template-columns: 1fr; }
+      .hero-content { padding: 120px 24px 80px; }
+      .trust { padding: 28px 24px; gap: 32px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .footer { padding: 48px 24px 32px; }
+    }
+  </style>
 </head>
 <body>
 
-    <h1>Plataforma de Acompañamiento Médico</h1>
-    <p>Apoyo integral para pacientes</p>
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo"><img src="img/logo.jpeg" alt="MediPlus"></a>
+  <div class="nav-links">
+    <a href="#servicios" class="nav-link-item">Servicios</a>
+    <a href="#nosotros" class="nav-link-item">Nosotros</a>
+    <a href="login.html" class="nav-btn">Ingresar →</a>
+  </div>
+</nav>
 
-    <a href="login.html" class="btn">Iniciar sesión</a>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <img src="https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1400&q=80" alt="Healthcare">
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge">✦ Plataforma de Salud Digital · Costa Rica</div>
+    <h1>Tu salud,<br><em>inteligentemente</em><br>gestionada</h1>
+    <p>MediPlus integra historial clínico, planes de dieta con IA, rehabilitación personalizada y un asistente virtual médico en una sola plataforma.</p>
+    <div class="hero-btns">
+      <a href="login.html" class="btn-white">Comenzar gratis →</a>
+      <a href="#servicios" class="btn-outline-white">Ver servicios</a>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST STRIP -->
+<div class="trust">
+  <div class="trust-item"><div class="trust-num">500+</div><div class="trust-label">Pacientes activos</div></div>
+  <div class="trust-item"><div class="trust-num">98%</div><div class="trust-label">Satisfacción</div></div>
+  <div class="trust-item"><div class="trust-num">24/7</div><div class="trust-label">Asistente IA</div></div>
+  <div class="trust-item"><div class="trust-num">5+</div><div class="trust-label">Módulos de salud</div></div>
+</div>
+
+<!-- SERVICIOS -->
+<section class="section" id="servicios" style="background:white;">
+  <div class="section-inner">
+    <div class="eyebrow">Nuestros Servicios</div>
+    <h2 class="section-title">Todo lo que necesitas para<br>cuidar tu <em>salud</em></h2>
+    <p class="section-sub">Desde el seguimiento de tu historial clínico hasta planes de rehabilitación generados por inteligencia artificial.</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=800&q=80" alt="Historial" class="service-img">
+        <div class="service-body">
+          <div class="service-icon" style="background:rgba(139,92,246,0.1);">📋</div>
+          <h3>Historial Clínico Completo</h3>
+          <p>Centraliza toda tu información médica: enfermedades, cirugías, citas y rehabilitaciones en un solo lugar accesible desde cualquier dispositivo.</p>
+        </div>
+      </div>
+      <div class="service-card">
+        <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80" alt="Nutrición" class="service-img">
+        <div class="service-body">
+          <div class="service-icon" style="background:rgba(16,185,129,0.1);">🥗</div>
+          <h3>Dieta Personalizada con IA</h3>
+          <p>Nuestra IA analiza tus condiciones médicas y genera un plan alimenticio 100% adaptado. Diabético, hipertenso o celíaco — hay un plan para cada uno.</p>
+        </div>
+      </div>
+      <div class="service-card">
+        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80" alt="Rehabilitación" class="service-img">
+        <div class="service-body">
+          <div class="service-icon" style="background:rgba(8,145,178,0.1);">🏃</div>
+          <h3>Rehabilitación Inteligente</h3>
+          <p>Describe tu lesión y recibe un plan de ejercicios en 3 fases progresivas diseñado por IA, adaptado a tu nivel de actividad.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOSOTROS -->
+<section class="section" id="nosotros">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-img-wrap">
+        <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&q=80" alt="Sobre MediPlus" class="about-img">
+        <div class="about-badge">
+          <div class="about-badge-num">2024</div>
+          <div class="about-badge-lbl">Fundada en Costa Rica</div>
+        </div>
+      </div>
+      <div class="about-text">
+        <div class="eyebrow">Quiénes Somos</div>
+        <h2>Una plataforma creada <em>para pacientes,</em> por profesionales</h2>
+        <p>MediPlus nació de la necesidad real de pacientes costarricenses de tener su información médica organizada, accesible y útil.</p>
+        <p>Integramos inteligencia artificial de última generación para ofrecer recomendaciones personalizadas que antes solo eran posibles con costosas consultas privadas.</p>
+        <div class="about-checks">
+          <div class="about-check"><div class="check-dot">✓</div>Planes de dieta personalizados según tu diagnóstico</div>
+          <div class="about-check"><div class="check-dot">✓</div>Ejercicios de rehabilitación adaptados a tu lesión</div>
+          <div class="about-check"><div class="check-dot">✓</div>Asistente virtual médico disponible las 24 horas</div>
+          <div class="about-check"><div class="check-dot">✓</div>Historial clínico seguro desde cualquier dispositivo</div>
+          <div class="about-check"><div class="check-dot">✓</div>Tecnología con respaldo médico profesional</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="section how-bg">
+  <div class="section-inner">
+    <div class="eyebrow" style="color:#a78bfa;">¿Cómo funciona?</div>
+    <h2 class="section-title" style="color:white;">En 4 pasos estás<br><em>listo para empezar</em></h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><h3>Crea tu cuenta</h3><p>Regístrate gratis con tu correo y contraseña. Solo toma 30 segundos.</p></div>
+      <div class="step"><div class="step-num">02</div><h3>Registra tu historial</h3><p>Agrega tus enfermedades, citas médicas, cirugías y rehabilitaciones.</p></div>
+      <div class="step"><div class="step-num">03</div><h3>Activa la IA</h3><p>Solicita tu plan de dieta o rehabilitación. La IA analiza tu perfil al instante.</p></div>
+      <div class="step"><div class="step-num">04</div><h3>Vive más saludable</h3><p>Sigue tu plan personalizado y consulta al asistente cuando lo necesites.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="section-inner">
+    <div class="cta-banner">
+      <div>
+        <h2>¿Listo para cuidar<br>tu salud con IA?</h2>
+        <p>Únete a cientos de pacientes que ya gestionan su salud de forma inteligente con MediPlus. Registro gratuito, sin tarjeta de crédito.</p>
+      </div>
+      <a href="login.html" class="btn-cta">Crear cuenta gratis →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <img src="img/logo.jpeg" alt="MediPlus" style="height:44px;object-fit:contain;">
+      <p>Plataforma de gestión de salud digital para pacientes y profesionales médicos. Hecho con ❤ en Costa Rica.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Plataforma</h4>
+      <a href="dashboard.html">Historial Clínico</a>
+      <a href="nutrition.html">Dieta con IA</a>
+      <a href="rehabilitation.html">Rehabilitación</a>
+      <a href="chat.html">Asistente Virtual</a>
+    </div>
+    <div class="footer-col">
+      <h4>Compañía</h4>
+      <a href="#nosotros">Quiénes Somos</a>
+      <a href="#servicios">Servicios</a>
+    </div>
+    <div class="footer-col">
+      <h4>Acceso</h4>
+      <a href="login.html">Iniciar Sesión</a>
+      <a href="login.html">Crear Cuenta</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 MediPlus · Todos los derechos reservados</span>
+    <span>Powered by Spring Boot + MySQL + OpenAI</span>
+  </div>
+</footer>
 
 </body>
 </html>

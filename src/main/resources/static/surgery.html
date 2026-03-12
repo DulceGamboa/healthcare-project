@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enfermedades — MediPlus</title>
+  <title>Cirugías — MediPlus</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -15,10 +15,10 @@
   <main class="main">
     <div class="page-header flex items-center justify-between">
       <div>
-        <h1>💊 Enfermedades</h1>
-        <p>Registro de enfermedades por paciente</p>
+        <h1>🔬 Cirugías</h1>
+        <p>Registro de cirugías por paciente</p>
       </div>
-      <button class="btn btn-primary" onclick="openModal()">+ Nueva Enfermedad</button>
+      <button class="btn btn-primary" onclick="openModal()">+ Nueva Cirugía</button>
     </div>
 
     <div class="card">
@@ -35,21 +35,29 @@
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">💊 Nueva Enfermedad</span>
+      <span class="modal-title">🔬 Nueva Cirugía</span>
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
     <div class="form-group">
-      <label class="form-label">Nombre de la enfermedad</label>
-      <input type="text" class="form-input" id="fDisease" placeholder="Ej: Diabetes tipo 2">
+      <label class="form-label">Tipo de cirugía</label>
+      <input type="text" class="form-input" id="fType" placeholder="Ej: Apendicectomía, Rodilla...">
     </div>
     <div class="form-group">
-      <label class="form-label">ID del Paciente</label>
+      <label class="form-label">Fecha de cirugía</label>
+      <input type="date" class="form-input" id="fDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notas</label>
+      <input type="text" class="form-input" id="fNotes" placeholder="Observaciones adicionales...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Paciente</label>
       <select class="form-input" id="fUserId">
         <option value="">Selecciona un paciente...</option>
       </select>
     </div>
     <div style="display:flex;gap:10px;margin-top:8px;">
-      <button class="btn btn-primary w-full" onclick="saveDisease()">Guardar</button>
+      <button class="btn btn-primary w-full" onclick="saveSurgery()">Guardar</button>
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
     </div>
   </div>
@@ -60,19 +68,19 @@
 <script src="js/app.js"></script>
 <script>
   if (!requireAuth()) throw new Error('No auth');
-  document.getElementById('sidebar').innerHTML = renderSidebar('diseases');
+  document.getElementById('sidebar').innerHTML = renderSidebar('surgery');
 
-  async function loadDiseases() {
+  async function loadSurgeries() {
     try {
-      const res      = await authFetch(`${API}/diseases`);
-      const diseases = await res.json();
+      const res       = await authFetch(`${API}/surgeries`);
+      const surgeries = await res.json();
 
-      if (!diseases.length) {
+      if (!surgeries.length) {
         document.getElementById('tableContainer').innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">💊</div>
-            <h3>Sin enfermedades registradas</h3>
-            <p>Agrega la primera con el botón "Nueva Enfermedad"</p>
+            <div class="empty-icon">🔬</div>
+            <h3>Sin cirugías registradas</h3>
+            <p>Agrega la primera con el botón "Nueva Cirugía"</p>
           </div>`;
         return;
       }
@@ -83,19 +91,23 @@
             <thead>
               <tr>
                 <th>#</th>
-                <th>Enfermedad</th>
+                <th>Tipo</th>
+                <th>Fecha</th>
+                <th>Notas</th>
                 <th>Paciente</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              ${diseases.map(d => `
+              ${surgeries.map(s => `
                 <tr>
-                  <td>#${d.id}</td>
-                  <td>${d.diseaseName}</td>
-                  <td>${d.user ? d.user.name : '—'}</td>
+                  <td>#${s.id}</td>
+                  <td>${s.surgeryType || '—'}</td>
+                  <td>${s.surgeryDate || '—'}</td>
+                  <td>${s.notes || '—'}</td>
+                  <td>${s.user ? s.user.name : '—'}</td>
                   <td>
-                    <button class="btn btn-danger btn-sm" onclick="deleteDisease(${d.id})">🗑 Eliminar</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSurgery(${s.id})">🗑 Eliminar</button>
                   </td>
                 </tr>
               `).join('')}
@@ -103,7 +115,7 @@
           </table>
         </div>`;
     } catch {
-      showToast('Error al cargar enfermedades', 'error');
+      showToast('Error al cargar cirugías', 'error');
     }
   }
 
@@ -114,8 +126,8 @@
       const sel   = document.getElementById('fUserId');
       sel.innerHTML = '<option value="">Selecciona un paciente...</option>';
       users.forEach(u => {
-        const opt   = document.createElement('option');
-        opt.value   = u.id;
+        const opt       = document.createElement('option');
+        opt.value       = u.id;
         opt.textContent = `${u.name} (ID: ${u.id})`;
         sel.appendChild(opt);
       });
@@ -125,8 +137,10 @@
   }
 
   function openModal() {
-    document.getElementById('fDisease').value = '';
-    document.getElementById('fUserId').value  = '';
+    document.getElementById('fType').value   = '';
+    document.getElementById('fDate').value   = '';
+    document.getElementById('fNotes').value  = '';
+    document.getElementById('fUserId').value = '';
     loadPatients();
     document.getElementById('modal').classList.add('open');
   }
@@ -135,41 +149,45 @@
     document.getElementById('modal').classList.remove('open');
   }
 
-  async function saveDisease() {
-    const diseaseName = document.getElementById('fDisease').value.trim();
+  async function saveSurgery() {
+    const surgeryType = document.getElementById('fType').value.trim();
+    const surgeryDate = document.getElementById('fDate').value;
+    const notes       = document.getElementById('fNotes').value.trim();
     const userId      = document.getElementById('fUserId').value;
 
-    if (!diseaseName || !userId) return showToast('Completa todos los campos', 'error');
+    if (!surgeryType || !surgeryDate || !userId) return showToast('Completa todos los campos obligatorios', 'error');
 
     try {
-      const res = await authFetch(`${API}/diseases`, {
+      const res = await authFetch(`${API}/surgeries`, {
         method: 'POST',
         body: JSON.stringify({
-          diseaseName,
+          surgeryType,
+          surgeryDate,
+          notes,
           user: { id: parseInt(userId) }
         })
       });
       if (!res.ok) throw new Error('Error al guardar');
-      showToast('Enfermedad guardada correctamente');
+      showToast('Cirugía guardada correctamente');
       closeModal();
-      loadDiseases();
+      loadSurgeries();
     } catch(e) {
       showToast(e.message, 'error');
     }
   }
 
-  async function deleteDisease(id) {
-    if (!confirm('¿Eliminar esta enfermedad?')) return;
+  async function deleteSurgery(id) {
+    if (!confirm('¿Eliminar esta cirugía?')) return;
     try {
-      await authFetch(`${API}/diseases/${id}`, { method: 'DELETE' });
-      showToast('Enfermedad eliminada');
-      loadDiseases();
+      await authFetch(`${API}/surgeries/${id}`, { method: 'DELETE' });
+      showToast('Cirugía eliminada');
+      loadSurgeries();
     } catch {
       showToast('Error al eliminar', 'error');
     }
   }
 
-  loadDiseases();
+  loadSurgeries();
 </script>
 </body>
 </html>

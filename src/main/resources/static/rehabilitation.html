@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rehabilitación — MediPlus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="main">
+    <div class="page-header flex items-center justify-between">
+      <div>
+        <h1>🏃 Rehabilitación</h1>
+        <p>Registro de terapias y plan de ejercicios con IA</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal()">+ Nueva Terapia</button>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card mb-6">
+      <div id="tableContainer">
+        <div style="text-align:center;padding:40px;">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IA -->
+    <div class="card">
+      <div class="card-title">🤖 Generar Plan de Rehabilitación con IA</div>
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Tipo de lesión o condición</label>
+          <input type="text" class="form-input" id="aiInjury" placeholder="Ej: Lesión de rodilla, dolor lumbar...">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Nivel de actividad</label>
+          <select class="form-input" id="aiLevel">
+            <option value="sedentario">Sedentario</option>
+            <option value="leve">Actividad leve</option>
+            <option value="moderado" selected>Actividad moderada</option>
+            <option value="activo">Muy activo</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observaciones adicionales (opcional)</label>
+        <input type="text" class="form-input" id="aiNotes" placeholder="Ej: adulto mayor, post-operatorio, sin acceso a gimnasio...">
+      </div>
+      <button class="btn btn-primary" id="aiBtn" onclick="generatePlan()">
+        🤖 Generar Plan con IA
+      </button>
+
+      <div id="aiResult" style="display:none;" class="ai-result">
+        <div class="ai-result-header">✨ Plan de Rehabilitación Generado</div>
+        <div class="ai-result-body" id="aiResultBody"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🏃 Nueva Terapia</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo de terapia</label>
+      <input type="text" class="form-input" id="fType" placeholder="Ej: Fisioterapia, Hidroterapia...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha de inicio</label>
+      <input type="date" class="form-input" id="fStart">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha de fin</label>
+      <input type="date" class="form-input" id="fEnd">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Progreso</label>
+      <select class="form-input" id="fProgress">
+        <option value="Iniciado">Iniciado</option>
+        <option value="En progreso">En progreso</option>
+        <option value="Completado">Completado</option>
+        <option value="Suspendido">Suspendido</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Paciente</label>
+      <select class="form-input" id="fUserId">
+        <option value="">Selecciona un paciente...</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-primary w-full" onclick="saveRehab()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/app.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('No auth');
+  document.getElementById('sidebar').innerHTML = renderSidebar('rehabilitation');
+
+  const progressColors = {
+    'Iniciado':    'badge-blue',
+    'En progreso': 'badge-yellow',
+    'Completado':  'badge-green',
+    'Suspendido':  'badge-red',
+  };
+
+  async function loadRehabs() {
+    try {
+      const res   = await authFetch(`${API}/rehabilitations`);
+      const rehabs = await res.json();
+
+      if (!rehabs.length) {
+        document.getElementById('tableContainer').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🏃</div>
+            <h3>Sin terapias registradas</h3>
+            <p>Agrega la primera con el botón "Nueva Terapia"</p>
+          </div>`;
+        return;
+      }
+
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tipo de Terapia</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Progreso</th>
+                <th>Paciente</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rehabs.map(r => `
+                <tr>
+                  <td>#${r.id}</td>
+                  <td>${r.therapyType || '—'}</td>
+                  <td>${r.startDate || '—'}</td>
+                  <td>${r.endDate || '—'}</td>
+                  <td><span class="badge ${progressColors[r.progress] || 'badge-purple'}">${r.progress || '—'}</span></td>
+                  <td>${r.user ? r.user.name : '—'}</td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" onclick="deleteRehab(${r.id})">🗑 Eliminar</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    } catch {
+      showToast('Error al cargar rehabilitaciones', 'error');
+    }
+  }
+
+  async function loadPatients() {
+    try {
+      const res   = await authFetch(`${API}/users`);
+      const users = await res.json();
+      const sel   = document.getElementById('fUserId');
+      sel.innerHTML = '<option value="">Selecciona un paciente...</option>';
+      users.forEach(u => {
+        const opt       = document.createElement('option');
+        opt.value       = u.id;
+        opt.textContent = `${u.name} (ID: ${u.id})`;
+        sel.appendChild(opt);
+      });
+    } catch {
+      showToast('Error al cargar pacientes', 'error');
+    }
+  }
+
+  function openModal() {
+    document.getElementById('fType').value     = '';
+    document.getElementById('fStart').value    = '';
+    document.getElementById('fEnd').value      = '';
+    document.getElementById('fProgress').value = 'Iniciado';
+    document.getElementById('fUserId').value   = '';
+    loadPatients();
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+  }
+
+  async function saveRehab() {
+    const therapyType = document.getElementById('fType').value.trim();
+    const startDate   = document.getElementById('fStart').value;
+    const endDate     = document.getElementById('fEnd').value;
+    const progress    = document.getElementById('fProgress').value;
+    const userId      = document.getElementById('fUserId').value;
+
+    if (!therapyType || !startDate || !userId) return showToast('Completa todos los campos obligatorios', 'error');
+
+    try {
+      const res = await authFetch(`${API}/rehabilitations`, {
+        method: 'POST',
+        body: JSON.stringify({
+          therapyType,
+          startDate,
+          endDate,
+          progress,
+          user: { id: parseInt(userId) }
+        })
+      });
+      if (!res.ok) throw new Error('Error al guardar');
+      showToast('Terapia guardada correctamente');
+      closeModal();
+      loadRehabs();
+    } catch(e) {
+      showToast(e.message, 'error');
+    }
+  }
+
+  async function deleteRehab(id) {
+    if (!confirm('¿Eliminar esta terapia?')) return;
+    try {
+      await authFetch(`${API}/rehabilitations/${id}`, { method: 'DELETE' });
+      showToast('Terapia eliminada');
+      loadRehabs();
+    } catch {
+      showToast('Error al eliminar', 'error');
+    }
+  }
+
+  async function generatePlan() {
+    const injury = document.getElementById('aiInjury').value.trim();
+    const level  = document.getElementById('aiLevel').value;
+    const notes  = document.getElementById('aiNotes').value.trim();
+
+    if (!injury) return showToast('Describe el tipo de lesión', 'error');
+
+    const btn = document.getElementById('aiBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></div> Generando plan...';
+    document.getElementById('aiResult').style.display = 'none';
+
+    try {
+      const systemPrompt = `Eres un fisioterapeuta especialista. Genera planes de rehabilitación estructurados, progresivos y seguros. Responde siempre en español con formato claro usando secciones.`;
+
+      const userPrompt = `Genera un plan de rehabilitación completo para:
+- Lesión/condición: ${injury}
+- Nivel de actividad del paciente: ${level}
+${notes ? `- Notas adicionales: ${notes}` : ''}
+
+Incluye:
+1. Evaluación inicial
+2. Objetivos del tratamiento
+3. Fase 1 — Inicial (semanas 1-2): ejercicios específicos
+4. Fase 2 — Intermedia (semanas 3-6): ejercicios específicos
+5. Fase 3 — Avanzada (semanas 7+): ejercicios específicos
+6. Recomendaciones generales`;
+
+      const result = await askOpenAI(systemPrompt, userPrompt);
+      document.getElementById('aiResultBody').textContent = result;
+      document.getElementById('aiResult').style.display = 'block';
+      showToast('Plan generado exitosamente');
+    } catch(e) {
+      showToast('Error al generar plan. Verifica tu API key de OpenAI en app.js', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '🤖 Generar Plan con IA';
+    }
+  }
+
+  loadRehabs();
+</script>
+</body>
+</html>

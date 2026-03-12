@@ -1,24 +1,308 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Iniciar Sesión</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso — MediPlus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #8b5cf6; --purple-light: #a78bfa;
+      --teal: #0891b2;
+      --bg: #f8f5ff; --surface: #ffffff; --surface2: #f3f0ff;
+      --border: #e5dff8;
+      --text: #1e1438; --text-soft: #5b5080; --text-muted: #9d94bc;
+      --grad-main: linear-gradient(135deg, #8b5cf6 0%, #0891b2 100%);
+      --grad-soft: linear-gradient(135deg, #ede9fe 0%, #e0f7fa 100%);
+      --success: #10b981; --danger: #ef4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+
+    /* LEFT */
+    .left {
+      background: var(--grad-soft);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      justify-content: center; padding: 64px;
+      position: relative; overflow: hidden;
+    }
+    .left::before { content: ''; position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 60%); pointer-events: none; }
+    .left::after  { content: ''; position: absolute; bottom: -80px; left: -80px;  width: 340px; height: 340px; background: radial-gradient(circle, rgba(8,145,178,0.12) 0%, transparent 60%);  pointer-events: none; }
+    .left-logo { margin-bottom: 52px; position: relative; z-index: 1; }
+    .left-logo img { height: 64px; object-fit: contain; }
+    .left-content { position: relative; z-index: 1; }
+    .left-content h2 { font-family: 'Playfair Display', serif; font-size: 38px; line-height: 1.2; margin-bottom: 18px; }
+    .left-content h2 em { font-style: italic; background: var(--grad-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .left-content p { color: var(--text-soft); font-size: 15px; line-height: 1.75; margin-bottom: 36px; }
+    .feat { display: flex; flex-direction: column; gap: 13px; }
+    .feat-item { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; color: var(--text-soft); }
+    .feat-check { width: 26px; height: 26px; background: white; border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(139,92,246,0.1); }
+
+    /* RIGHT */
+    .right { display: flex; align-items: center; justify-content: center; padding: 60px; background: white; overflow-y: auto; }
+    .auth-box { width: 100%; max-width: 420px; }
+
+    /* TABS */
+    .tabs { display: flex; background: var(--surface2); border-radius: 14px; padding: 4px; margin-bottom: 32px; border: 1px solid var(--border); }
+    .tab-btn { flex: 1; padding: 11px; border: none; background: transparent; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; border-radius: 10px; transition: all 0.2s; }
+    .tab-btn.active { background: white; color: var(--purple); box-shadow: 0 2px 10px rgba(139,92,246,0.12); }
+
+    /* PANELS */
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeUp 0.2s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .panel-title { font-family: 'Playfair Display', serif; font-size: 27px; margin-bottom: 6px; }
+    .panel-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
+
+    /* FORM */
+    .form-group { margin-bottom: 16px; }
+    .form-lbl { display: block; font-size: 13px; font-weight: 700; color: var(--text-soft); margin-bottom: 7px; }
+    .form-inp { width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px; transition: all 0.2s; outline: none; }
+    .form-inp:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(139,92,246,0.12); background: white; }
+    .form-inp::placeholder { color: var(--text-muted); }
+
+    /* PASSWORD */
+    .pw-wrap { position: relative; }
+    .pw-btn { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); }
+
+    /* STRENGTH */
+    .strength-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 7px; }
+    .strength-fill { height: 100%; border-radius: 4px; transition: all 0.3s; width: 0%; }
+    .strength-txt { font-size: 11px; font-weight: 700; margin-top: 4px; min-height: 16px; }
+
+    /* SUBMIT */
+    .btn-sub { width: 100%; background: var(--grad-main); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer; transition: all 0.2s; margin-top: 8px; box-shadow: 0 4px 14px rgba(139,92,246,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-sub:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(139,92,246,0.4); }
+    .btn-sub:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ALERT */
+    .auth-alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; display: none; align-items: center; gap: 8px; }
+    .auth-alert.err { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); color: var(--danger); }
+    .auth-alert.ok  { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); color: var(--success); }
+    .auth-alert.show { display: flex; }
+
+    /* SPINNER */
+    .spin { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: rot 0.7s linear infinite; flex-shrink: 0; }
+    @keyframes rot { to { transform: rotate(360deg); } }
+
+    .link-row { text-align: center; margin-top: 14px; font-size: 13px; color: var(--text-muted); font-weight: 600; }
+    .link-row a { color: var(--purple); text-decoration: none; cursor: pointer; }
+    .back-link { text-align: center; margin-top: 20px; }
+    .back-link a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .back-link a:hover { color: var(--purple); }
+
+    @media (max-width: 768px) {
+      body { grid-template-columns: 1fr; }
+      .left { display: none; }
+      .right { padding: 36px 24px; }
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>Iniciar Sesión</h1>
-    </header>
+<!-- LEFT -->
+<div class="left">
+  <div class="left-logo"><img src="img/logo.jpeg" alt="MediPlus"></div>
+  <div class="left-content">
+    <h2>Tu salud,<br><em>siempre contigo</em></h2>
+    <p>Crea tu cuenta gratis o inicia sesión para acceder a tu plataforma médica personal con inteligencia artificial.</p>
+    <div class="feat">
+      <div class="feat-item"><div class="feat-check">✓</div>Historial clínico centralizado</div>
+      <div class="feat-item"><div class="feat-check">✓</div>Dieta IA según tu diagnóstico</div>
+      <div class="feat-item"><div class="feat-check">✓</div>Plan de rehabilitación personalizado</div>
+      <div class="feat-item"><div class="feat-check">✓</div>Asistente virtual 24/7</div>
+    </div>
+  </div>
+</div>
 
-    <main>
-        <form onsubmit="login(event)">
-            <input type="email" placeholder="Correo electrónico" required><br><br>
-            <input type="password" placeholder="Contraseña" required><br><br>
-            <button class="btn" type="submit">Entrar</button>
-        </form>
-    </main>
+<!-- RIGHT -->
+<div class="right">
+  <div class="auth-box">
 
-    <script src="js/app.js"></script>
+    <div class="tabs">
+      <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Iniciar Sesión</button>
+      <button class="tab-btn" id="tabRegister" onclick="switchTab('register')">Crear Cuenta</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="panel active" id="panelLogin">
+      <div class="panel-title">Bienvenido de vuelta 👋</div>
+      <div class="panel-sub">Ingresa tus credenciales para continuar</div>
+      <div class="auth-alert" id="loginAlert"></div>
+      <div class="form-group">
+        <label class="form-lbl">Correo electrónico</label>
+        <input type="email" class="form-inp" id="lEmail" placeholder="tu@correo.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">Contraseña</label>
+        <div class="pw-wrap">
+          <input type="password" class="form-inp" id="lPw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+          <button class="pw-btn" type="button" onclick="togglePw('lPw', this)">👁</button>
+        </div>
+      </div>
+      <button class="btn-sub" id="loginBtn" onclick="doLogin()">Entrar a MediPlus →</button>
+      <div class="link-row">¿No tienes cuenta? <a onclick="switchTab('register')">Regístrate gratis</a></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="panel" id="panelRegister">
+      <div class="panel-title">Crear cuenta 🌱</div>
+      <div class="panel-sub">Completa tus datos, es rápido y gratis</div>
+      <div class="auth-alert" id="regAlert"></div>
+      <div class="form-group">
+        <label class="form-lbl">Nombre completo</label>
+        <input type="text" class="form-inp" id="rName" placeholder="María García" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">Correo electrónico</label>
+        <input type="email" class="form-inp" id="rEmail" placeholder="tu@correo.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">Contraseña</label>
+        <div class="pw-wrap">
+          <input type="password" class="form-inp" id="rPw" placeholder="Mínimo 6 caracteres" autocomplete="new-password" oninput="checkStrength(this.value)">
+          <button class="pw-btn" type="button" onclick="togglePw('rPw', this)">👁</button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="sBar"></div></div>
+        <div class="strength-txt" id="sLbl"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">Confirmar contraseña</label>
+        <div class="pw-wrap">
+          <input type="password" class="form-inp" id="rPw2" placeholder="Repite tu contraseña" autocomplete="new-password" onkeydown="if(event.key==='Enter') doRegister()">
+          <button class="pw-btn" type="button" onclick="togglePw('rPw2', this)">👁</button>
+        </div>
+      </div>
+      <button class="btn-sub" id="regBtn" onclick="doRegister()">Crear mi cuenta →</button>
+      <div class="link-row">¿Ya tienes cuenta? <a onclick="switchTab('login')">Inicia sesión</a></div>
+    </div>
+
+    <div class="back-link"><a href="index.html">← Volver al inicio</a></div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:8080/api';
+
+  // Si ya hay sesión activa, ir al dashboard
+  if (localStorage.getItem('mp_token')) location.href = 'dashboard.html';
+
+  function switchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('tabLogin').classList.toggle('active', isLogin);
+    document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+    document.getElementById('panelLogin').classList.toggle('active', isLogin);
+    document.getElementById('panelRegister').classList.toggle('active', !isLogin);
+    hideAlert('loginAlert');
+    hideAlert('regAlert');
+  }
+
+  function togglePw(id, btn) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+    btn.textContent = el.type === 'password' ? '👁' : '🙈';
+  }
+
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.innerHTML = `${type === 'err' ? '✕' : '✓'} ${msg}`;
+    el.className = `auth-alert ${type} show`;
+  }
+
+  function hideAlert(id) {
+    document.getElementById(id).classList.remove('show');
+  }
+
+  function setLoading(id, on, text) {
+    const btn = document.getElementById(id);
+    btn.disabled = on;
+    btn.innerHTML = on ? '<div class="spin"></div> Procesando...' : text;
+  }
+
+  function checkStrength(pw) {
+    let s = 0;
+    if (pw.length >= 6) s++;
+    if (pw.length >= 10) s++;
+    if (/[A-Z]/.test(pw)) s++;
+    if (/[0-9]/.test(pw)) s++;
+    if (/[^A-Za-z0-9]/.test(pw)) s++;
+    const lvs = [
+      { w: '0%',   c: '',        t: '' },
+      { w: '20%',  c: '#ef4444', t: 'Muy débil' },
+      { w: '45%',  c: '#f59e0b', t: 'Débil' },
+      { w: '65%',  c: '#8b5cf6', t: 'Aceptable' },
+      { w: '85%',  c: '#0891b2', t: 'Buena' },
+      { w: '100%', c: '#10b981', t: '¡Muy fuerte!' },
+    ];
+    const lv = lvs[Math.min(s, 5)];
+    const bar = document.getElementById('sBar');
+    const lbl = document.getElementById('sLbl');
+    bar.style.width = lv.w;
+    bar.style.background = lv.c;
+    lbl.textContent = lv.t;
+    lbl.style.color = lv.c;
+  }
+
+  function saveSession(data) {
+    localStorage.setItem('mp_token', data.token);
+    localStorage.setItem('mp_name',  data.name);
+    localStorage.setItem('mp_email', data.email);
+  }
+
+  async function doLogin() {
+    hideAlert('loginAlert');
+    const email    = document.getElementById('lEmail').value.trim();
+    const password = document.getElementById('lPw').value;
+    if (!email || !password) return showAlert('loginAlert', 'Completa todos los campos', 'err');
+
+    setLoading('loginBtn', true, 'Entrar a MediPlus →');
+    try {
+      const res  = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Correo o contraseña incorrectos');
+      saveSession(data);
+      showAlert('loginAlert', `¡Bienvenido, ${data.name}! Redirigiendo...`, 'ok');
+      setTimeout(() => location.href = 'dashboard.html', 900);
+    } catch(e) {
+      showAlert('loginAlert', e.message, 'err');
+      setLoading('loginBtn', false, 'Entrar a MediPlus →');
+    }
+  }
+
+  async function doRegister() {
+    hideAlert('regAlert');
+    const name     = document.getElementById('rName').value.trim();
+    const email    = document.getElementById('rEmail').value.trim();
+    const password = document.getElementById('rPw').value;
+    const confirm  = document.getElementById('rPw2').value;
+
+    if (!name || !email || !password || !confirm) return showAlert('regAlert', 'Completa todos los campos', 'err');
+    if (password.length < 6)   return showAlert('regAlert', 'La contraseña debe tener mínimo 6 caracteres', 'err');
+    if (password !== confirm)  return showAlert('regAlert', 'Las contraseñas no coinciden', 'err');
+
+    setLoading('regBtn', true, 'Crear mi cuenta →');
+    try {
+      const res  = await fetch(`${API}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al registrarse');
+      saveSession(data);
+      showAlert('regAlert', `¡Cuenta creada! Bienvenido, ${data.name} 🎉`, 'ok');
+      setTimeout(() => location.href = 'dashboard.html', 1000);
+    } catch(e) {
+      showAlert('regAlert', e.message, 'err');
+      setLoading('regBtn', false, 'Crear mi cuenta →');
+    }
+  }
+</script>
 </body>
 </html>
