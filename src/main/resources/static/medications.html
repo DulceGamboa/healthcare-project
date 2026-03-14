@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicamentos — MediPlus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main">
+
+    <div class="page-hero">
+      <img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1200&q=80" alt="Medicamentos">
+      <div class="page-hero-overlay">
+        <div class="page-hero-text">
+          <h2>Registro de Medicamentos</h2>
+          <p>Control de medicacion activa y tratamientos por paciente</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-header flex items-center justify-between">
+      <div><h1>Medicamentos</h1><p>Medicacion activa y tratamientos por paciente</p></div>
+      <button class="btn btn-primary" onclick="openModal()">+ Nuevo Medicamento</button>
+    </div>
+
+    <div class="grid-3 mb-6">
+      <div class="img-card">
+        <img src="https://images.unsplash.com/photo-1550572017-edd951b55104?w=600&q=80" alt="Pastillas">
+        <div class="img-card-body">
+          <div class="img-card-icon" style="background:var(--purple-soft);">&#128138;</div>
+          <h3>Medicacion Oral</h3>
+          <p>Tabletas, capsulas y jarabes con su dosis y frecuencia registradas.</p>
+        </div>
+      </div>
+      <div class="img-card">
+        <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&q=80" alt="Control">
+        <div class="img-card-body">
+          <div class="img-card-icon" style="background:var(--teal-soft);">&#128203;</div>
+          <h3>Control de Dosis</h3>
+          <p>Frecuencia, fecha de inicio y fin de cada tratamiento activo.</p>
+        </div>
+      </div>
+      <div class="img-card">
+        <img src="https://images.unsplash.com/photo-1576671081837-49000212a370?w=600&q=80" alt="Seguimiento">
+        <div class="img-card-body">
+          <div class="img-card-icon" style="background:var(--pink-soft);">&#9203;</div>
+          <h3>Recordatorio Activo</h3>
+          <p>Lleva el historial completo de cada medicamento por paciente.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="tableContainer">
+        <div style="text-align:center;padding:40px;"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Nuevo Medicamento</span>
+      <button class="modal-close" onclick="closeModal()">x</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nombre del medicamento</label>
+      <input type="text" class="form-input" id="fName" placeholder="Ej: Metformina 500mg">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Dosis</label>
+      <input type="text" class="form-input" id="fDosage" placeholder="Ej: 500mg, 1 tableta">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Frecuencia</label>
+      <select class="form-input" id="fFrequency">
+        <option>Cada 8 horas</option>
+        <option>Cada 12 horas</option>
+        <option>Una vez al dia</option>
+        <option>Dos veces al dia</option>
+        <option>Tres veces al dia</option>
+        <option>Segun necesidad</option>
+      </select>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Fecha inicio</label>
+        <input type="date" class="form-input" id="fStart">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha fin</label>
+        <input type="date" class="form-input" id="fEnd">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Paciente</label>
+      <select class="form-input" id="fUserId">
+        <option value="">Selecciona un paciente...</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-primary w-full" onclick="saveMedication()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="js/app.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('No auth');
+  document.getElementById('sidebar').innerHTML = renderSidebar('medications');
+
+  async function loadMedications() {
+    try {
+      const res  = await authFetch(`${API}/medications`);
+      const meds = await res.json();
+
+      if (!meds.length) {
+        document.getElementById('tableContainer').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">&#128138;</div>
+            <h3>Sin medicamentos registrados</h3>
+            <p>Agrega el primero con el boton Nuevo Medicamento</p>
+          </div>`;
+        return;
+      }
+
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Medicamento</th>
+                <th>Dosis</th>
+                <th>Frecuencia</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Paciente</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${meds.map(m => `
+                <tr>
+                  <td>#${m.id}</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:30px;height:30px;border-radius:8px;background:var(--purple-soft);display:flex;align-items:center;justify-content:center;font-size:15px;">&#128138;</div>
+                      <span style="font-weight:600;">${m.medicationName || '—'}</span>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-purple">${m.dosage || '—'}</span></td>
+                  <td><span class="badge badge-teal">${m.frequency || '—'}</span></td>
+                  <td><span style="font-size:12px;color:var(--text-soft);">${m.startDate || '—'}</span></td>
+                  <td><span style="font-size:12px;color:var(--text-soft);">${m.endDate || '—'}</span></td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:28px;height:28px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:white;">
+                        ${m.user ? m.user.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase() : '?'}
+                      </div>
+                      ${m.user ? m.user.name : '—'}
+                    </div>
+                  </td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" onclick="deleteMedication(${m.id})">Eliminar</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    } catch {
+      showToast('Error al cargar medicamentos', 'error');
+    }
+  }
+
+  async function loadPatients() {
+    const res   = await authFetch(`${API}/users`);
+    const users = await res.json();
+    const sel   = document.getElementById('fUserId');
+    sel.innerHTML = '<option value="">Selecciona un paciente...</option>';
+    users.forEach(u => {
+      const o = document.createElement('option');
+      o.value = u.id;
+      o.textContent = `${u.name} (ID: ${u.id})`;
+      sel.appendChild(o);
+    });
+  }
+
+  function openModal() {
+    document.getElementById('fName').value      = '';
+    document.getElementById('fDosage').value    = '';
+    document.getElementById('fFrequency').value = 'Cada 8 horas';
+    document.getElementById('fStart').value     = '';
+    document.getElementById('fEnd').value       = '';
+    loadPatients();
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+  }
+
+  async function saveMedication() {
+    const medicationName = document.getElementById('fName').value.trim();
+    const dosage         = document.getElementById('fDosage').value.trim();
+    const frequency      = document.getElementById('fFrequency').value;
+    const startDate      = document.getElementById('fStart').value;
+    const endDate        = document.getElementById('fEnd').value;
+    const userId         = document.getElementById('fUserId').value;
+
+    if (!medicationName || !dosage || !userId) return showToast('Completa los campos obligatorios', 'error');
+
+    try {
+      const res = await authFetch(`${API}/medications`, {
+        method: 'POST',
+        body: JSON.stringify({
+          medicationName, dosage, frequency, startDate, endDate,
+          user: { id: parseInt(userId) }
+        })
+      });
+      if (!res.ok) throw new Error();
+      showToast('Medicamento guardado');
+      closeModal();
+      loadMedications();
+    } catch {
+      showToast('Error al guardar', 'error');
+    }
+  }
+
+  async function deleteMedication(id) {
+    if (!confirm('Eliminar este medicamento?')) return;
+    try {
+      await authFetch(`${API}/medications/${id}`, { method: 'DELETE' });
+      showToast('Medicamento eliminado');
+      loadMedications();
+    } catch {
+      showToast('Error al eliminar', 'error');
+    }
+  }
+
+  loadMedications();
+</script>
+</body>
+</html>
