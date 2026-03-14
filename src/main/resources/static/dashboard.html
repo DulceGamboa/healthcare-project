@@ -72,6 +72,31 @@
 <script src="js/app.js"></script>
 <script>
   if (!requireAuth()) throw new Error('No auth');
+  document.getElementById('sidebar').innerHTML = renderSidebar('dashboard');
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Buenos dias' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
+  document.getElementById('heroGreeting').textContent = `${greeting}, ${getUserName()}`;
+
+  async function loadStats() {
+    for (const ep of [
+      { id: 'statDiseases',     url: '/diseases' },
+      { id: 'statAppointments', url: '/appointments' },
+      { id: 'statSurgeries',    url: '/surgeries' },
+      { id: 'statMeds',         url: '/medications' },
+    ]) {
+      try {
+        const res  = await authFetch(`${API}${ep.url}`);
+        const data = await res.json();
+        document.getElementById(ep.id).textContent = Array.isArray(data) ? data.length : '—';
+      } catch {
+        document.getElementById(ep.id).textContent = '—';
+      }
+    }
+  }
+
+  loadStats();
+</script>
 
   // Render sidebar
   document.getElementById('sidebar').innerHTML = renderSidebar('dashboard');
