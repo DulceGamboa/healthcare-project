@@ -1,0 +1,309 @@
+================================================================
+MEDIPLUS — USER GUIDE
+Healthcare Management System
+================================================================
+Version: 1.0
+Date: March 2026
+================================================================
+
+GETTING STARTED
+
+1. Open your browser and go to:
+   http://localhost:8080/login.html
+
+2. Click the "Registrarse" tab to create a new account.
+
+3. Fill in your full name, email address and a password
+   of at least 6 characters.
+
+4. Click "Crear cuenta".
+
+5. Switch to the "Iniciar sesion" tab.
+
+6. Enter your email and password.
+
+7. Click "Iniciar sesion".
+   You will be redirected to the Dashboard automatically.
+
+NOTE: Your session lasts 24 hours. After that you will be
+asked to log in again automatically.
+
+----------------------------------------------------------------
+DASHBOARD
+----------------------------------------------------------------
+
+The Dashboard is the main screen of MediPlus. It shows:
+
+- A welcome message with your name and time of day.
+- Statistics cards showing totals for diseases, appointments,
+  surgeries and medications registered in the system.
+- Quick access buttons to all modules.
+- AI modules section with links to Diet, Rehabilitation
+  and the Virtual Assistant.
+- System status indicator showing backend, database
+  and authentication status.
+
+----------------------------------------------------------------
+PATIENTS
+----------------------------------------------------------------
+
+Navigate to: Sidebar -> Pacientes
+
+To add a patient click the button that says Nuevo Paciente.
+Enter the full name, email address and age of the patient.
+Click Guardar Paciente and the patient will appear in the
+table immediately.
+
+To delete a patient find the row in the table and click
+the Eliminar button. Confirm the action in the popup dialog.
+
+NOTE: Patients must be registered first before you can
+add diseases, appointments, surgeries, rehabilitations
+or medications linked to them.
+
+----------------------------------------------------------------
+DISEASES
+----------------------------------------------------------------
+
+Navigate to: Sidebar -> Enfermedades
+
+To add a disease click Nueva Enfermedad. Enter the name
+of the condition such as Diabetes tipo 2 or Hipertension.
+Select the patient from the dropdown list and click Guardar.
+
+To delete a disease find it in the table and click Eliminar
+then confirm the action.
+
+----------------------------------------------------------------
+MEDICAL APPOINTMENTS
+----------------------------------------------------------------
+
+Navigate to: Sidebar -> Citas Medicas
+
+To add an appointment click Nueva Cita. Enter the reason
+for the visit, select the appointment date and choose
+a status from the following options:
+
+    Pendiente   - appointment not yet confirmed
+    Confirmada  - appointment confirmed
+    Completada  - appointment already attended
+    Cancelada   - appointment was cancelled
+
+Then select the patient from the dropdown and click
+Guardar Cita.
+
+At the top of the page there is a statistics bar showing
+the total count of appointments broken down by status:
+Total, Pending, Completed and Cancelled.
+
+To delete an appointment find it in the table, click
+Eliminar and confirm.
+
+----------------------------------------------------------------
+SURGERIES
+----------------------------------------------------------------
+
+Navigate to: Sidebar -> Cirugias
+
+To add a surgery click Nueva Cirugia. Enter the type of
+surgery such as Apendicectomia or Rodilla derecha. Select
+the surgery date and enter any clinical notes if needed.
+Select the patient from the dropdown and click Guardar Cirugia.
+
+To delete a surgery find it in the table and click Eliminar
+then confirm.
+
+TIP: After registering a surgery you can create a
+rehabilitation plan for that patient using the AI module
+in the Rehabilitacion section.
+
+----------------------------------------------------------------
+REHABILITATION
+----------------------------------------------------------------
+
+Navigate to: Sidebar -> Rehabilitacion
+
+To add a therapy click Nueva Terapia. Enter the therapy
+type such as Fisioterapia or Hidroterapia. Select the start
+date and optionally the end date. Choose the progress status
+from the following options:
+
+    Iniciado      - therapy just started
+    En progreso   - therapy currently ongoing
+    Completado    - therapy has been completed
+    Suspendido    - therapy was paused or cancelled
+
+Select the patient and click Guardar Terapia.
+
+Each therapy in the table shows a colored progress bar
+that reflects the current status visually.
+
+To delete a therapy find it in the table, click Eliminar
+and confirm.
+
+To generate an AI rehabilitation plan scroll down to the
+dark section at the bottom of the page. This feature
+requires an OpenAI API key configured in app.js.
+
+Enter the type of injury or condition in the first field.
+Select the activity level of the patient:
+
+    Sedentario         - little or no physical activity
+    Actividad leve     - light occasional activity
+    Actividad moderada - regular moderate activity
+    Muy activo         - intense daily physical activity
+
+Add any additional notes such as adult patient, no gym
+access or post-operative if applicable. Then click
+Generar Plan con IA and wait a few seconds.
+
+The generated plan will appear with three phases:
+Phase 1 covering weeks 1 and 2 with initial gentle
+exercises, Phase 2 covering weeks 3 to 6 with progressive
+strengthening, and Phase 3 covering week 7 onwards with
+functional exercises and return to daily activities.
+
+----------------------------------------------------------------
+MEDICATIONS
+----------------------------------------------------------------
+
+Navigate to: Sidebar -> Medicamentos
+
+To add a medication click Nuevo Medicamento. Enter the
+medication name such as Metformina 500mg. Enter the dosage
+such as 500mg or 1 tablet. Select the frequency from
+the following options:
+
+    Cada 8 horas
+    Cada 12 horas
+    Una vez al dia
+    Dos veces al dia
+    Tres veces al dia
+    Segun necesidad
+
+Select the start date and optionally the end date of the
+treatment. Select the patient from the dropdown list
+and click Guardar.
+
+To delete a medication find it in the table, click Eliminar
+and confirm.
+
+----------------------------------------------------------------
+CLINICAL HISTORY
+----------------------------------------------------------------
+
+Navigate to: Sidebar -> Historial Clinico
+
+The Clinical History page shows a unified view of all
+medical records organized in five tabs. Click each tab
+to switch between sections:
+
+    Tab 1 - Enfermedades  shows all registered diseases
+    Tab 2 - Citas         shows all medical appointments
+    Tab 3 - Cirugias      shows all surgeries
+    Tab 4 - Terapias      shows all rehabilitation therapies
+    Tab 5 - Medicamentos  shows all medications
+
+The statistics bar at the top shows total counts for
+diseases, appointments, surgeries and medications.
+
+----------------------------------------------------------------
+DIET AND NUTRITION AI MODULE
+----------------------------------------------------------------
+
+Navigate to: Sidebar -> Dieta y Nutricion
+
+This feature requires an OpenAI API key configured in
+the file js/app.js by the system administrator.
+
+At the top of the page there are quick-select chips for
+the most common conditions. Click any chip to automatically
+fill the condition field. Available chips include:
+Diabetes tipo 2, Hipertension, Hipotiroidismo, Anemia,
+Celiaquia, Colon irritable, Obesidad, Colesterol alto,
+Insuficiencia renal and Gastritis.
+
+To generate a diet plan enter the medical condition or
+click one of the chips. Add any dietary restrictions in
+the second field such as vegetariano, sin gluten or
+sin lactosa. Select the nutritional goal from:
+
+    Alimentacion equilibrada  - balanced general diet
+    Bajar de peso             - weight loss
+    Subir de peso             - weight gain
+    Control glucemico         - blood sugar control
+    Reducir inflamacion       - reduce inflammation
+
+Click Generar Plan de Dieta con IA and wait a few seconds.
+
+The generated plan will include a general description,
+a list of recommended foods, a list of foods to avoid,
+a full daily meal plan covering breakfast, mid-morning
+snack, lunch, afternoon snack and dinner, plus important
+clinical tips and medical warnings.
+
+To get a different plan click the Regenerar button that
+appears after the plan is displayed.
+
+----------------------------------------------------------------
+VIRTUAL ASSISTANT
+----------------------------------------------------------------
+
+Navigate to: Sidebar -> Asistente Virtual
+
+This feature requires an OpenAI API key configured in
+the file js/app.js by the system administrator.
+
+Type your medical question in the text box at the bottom
+of the screen. Press Enter or click the Enviar button.
+The assistant will respond within a few seconds. You can
+continue the conversation naturally by asking follow-up
+questions. To start a completely new conversation click
+the button that says Limpiar conversacion at the top.
+
+The virtual assistant can help with general questions
+about symptoms, information about medications and their
+side effects, nutrition and wellness advice, explanations
+of medical terms and general health information.
+
+IMPORTANT: The virtual assistant provides general
+information only and does not replace a real doctor.
+Always consult a qualified medical professional for
+specific diagnoses or treatment decisions.
+
+----------------------------------------------------------------
+LOGGING OUT
+----------------------------------------------------------------
+
+Click the arrow button at the bottom of the sidebar next
+to your name and email to log out. Your session data will
+be cleared from the browser and you will be redirected
+to the login page automatically.
+
+----------------------------------------------------------------
+TROUBLESHOOTING
+----------------------------------------------------------------
+
+If the page shows an error or redirects to login
+unexpectedly your session has expired. Log in again at
+http://localhost:8080/login.html. Sessions last 24 hours.
+
+If the table is empty after adding a record try refreshing
+the page. The data was saved correctly to the database.
+
+If the AI modules show an error message the OpenAI API key
+is not configured or has no available credits. Contact
+the system administrator to resolve this.
+
+If the logo does not appear in the sidebar the file
+img/logo.jpeg is missing from the static folder. Ask
+the administrator to add it.
+
+If you cannot connect to the system at all the backend
+server may not be running. Ask the administrator to
+start it using the command mvnw.cmd spring-boot:run
+on Windows or ./mvnw spring-boot:run on macOS and Linux.
+
+================================================================
+END OF USER GUIDE — MediPlus v1.0
+================================================================
