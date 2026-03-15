@@ -379,8 +379,11 @@ tbody td:first-child { color: var(--text); font-weight: 600; }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
 }
+.main {
+  display: flex;
+  flex-direction: column;
+}
 
-.main > .card {
-  width: 100%;
-  box-sizing: border-box;
+.main .card {
+  align-self: stretch;
 }
