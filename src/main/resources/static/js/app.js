@@ -6,8 +6,16 @@ function getUserName() { return localStorage.getItem('mp_name') || 'Usuario'; }
 function getUserEmail(){ return localStorage.getItem('mp_email') || ''; }
 
 function requireAuth() {
-  if (!getToken()) { location.href = 'login.html'; return false; }
+  if (!getToken()) {
+    location.href = 'login.html';
+    return false;
+  }
   return true;
+}
+
+function requirePassword() {
+  localStorage.removeItem('mp_token');
+  location.href = 'login.html';
 }
 
 async function authFetch(url, options = {}) {

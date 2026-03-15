@@ -58,7 +58,8 @@
 <div id="toast" class="toast"></div>
 <script src="js/app.js"></script>
 <script>
-  if (!requireAuth()) throw new Error('No auth');
+  localStorage.removeItem('mp_token');
+if (!requireAuth()) throw new Error('No auth');
   document.getElementById('sidebar').innerHTML = renderSidebar('history');
 
   const tabs    = ['diseases','appointments','surgeries','rehabs','medications'];
