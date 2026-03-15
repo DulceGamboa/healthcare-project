@@ -1,10 +1,8 @@
-// ── MediPlus app.js ──
 const API = 'http://localhost:8080/api';
-const OPENAI_API_KEY = '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'; 
+const OPENAI_API_KEY = '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';
 
-/* ── SESSION HELPERS ── */
 function getToken()    { return localStorage.getItem('mp_token'); }
-function getUserName() { return localStorage.getItem('mp_name') || 'Paciente'; }
+function getUserName() { return localStorage.getItem('mp_name') || 'Usuario'; }
 function getUserEmail(){ return localStorage.getItem('mp_email') || ''; }
 
 function requireAuth() {
@@ -28,66 +26,79 @@ function logout() {
   location.href = 'login.html';
 }
 
-/* ── SIDEBAR ── */
 function renderSidebar(activePage) {
-  const pages = [
-    { id: 'dashboard',      icon: '⊞', label: 'Dashboard',         href: 'dashboard.html' },
-    { id: 'profile',        icon: '👤', label: 'Pacientes',          href: 'profile.html' },
-    { id: 'history',        icon: '📋', label: 'Historial Clínico',  href: 'history.html' },
-    { id: 'diseases',       icon: '💊', label: 'Enfermedades',       href: 'diseases.html' },
-    { id: 'appointments',   icon: '📅', label: 'Citas Médicas',      href: 'appointments.html' },
-    { id: 'surgery',        icon: '🔬', label: 'Cirugías',           href: 'surgery.html' },
-    { id: 'rehabilitation', icon: '🏃', label: 'Rehabilitación',     href: 'rehabilitation.html' },
-    { id: 'nutrition',      icon: '🥗', label: 'Dieta y Nutrición',  href: 'nutrition.html' },
-    { id: 'chat',           icon: '🤖', label: 'Asistente IA',       href: 'chat.html' },
+  const name     = getUserName();
+  const email    = getUserEmail();
+  const initials = name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+
+  const sections = [
+    {
+      label: 'Principal',
+      items: [
+        { id: 'dashboard', label: 'Dashboard',        href: 'dashboard.html' },
+        { id: 'history',   label: 'Historial Clinico', href: 'history.html' },
+        { id: 'profile',   label: 'Pacientes',         href: 'profile.html' },
+      ]
+    },
+    {
+      label: 'Modulos IA',
+      items: [
+        { id: 'nutrition',      label: 'Dieta y Nutricion', href: 'nutrition.html' },
+        { id: 'rehabilitation', label: 'Rehabilitacion',    href: 'rehabilitation.html' },
+        { id: 'chat',           label: 'Asistente Virtual', href: 'chat.html' },
+      ]
+    },
+    {
+      label: 'Clinico',
+      items: [
+        { id: 'appointments',  label: 'Citas Medicas',  href: 'appointments.html' },
+        { id: 'diseases',      label: 'Enfermedades',   href: 'diseases.html' },
+        { id: 'surgery',       label: 'Cirugias',       href: 'surgery.html' },
+        { id: 'medications',   label: 'Medicamentos',   href: 'medications.html' },
+      ]
+    }
   ];
 
-  const navLinks = pages.map(p => `
-    <a href="${p.href}" class="nav-link ${activePage === p.id ? 'active' : ''}">
-      <span class="icon">${p.icon}</span>${p.label}
-    </a>
+  const navHTML = sections.map(sec => `
+    <div class="nav-section-label">${sec.label}</div>
+    ${sec.items.map(item => `
+      <a href="${item.href}" class="nav-link ${activePage === item.id ? 'active' : ''}">
+        <span class="nav-dot"></span>
+        ${item.label}
+      </a>
+    `).join('')}
   `).join('');
-
-  const name    = getUserName();
-  const email   = getUserEmail();
-  const initials = name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
 
   return `
     <div class="sidebar-logo">
-      <img src="img/logo.jpeg" alt="MediPlus">
+      <img src="img/logo.jpeg" alt="MediPlus"
+        style="height:44px;object-fit:contain;display:block;"
+        onerror="this.outerHTML='<div style=\'font-family:Fraunces,serif;font-size:20px;font-weight:700;color:var(--purple);font-style:italic;\'>MediPlus</div>'">
     </div>
-    <span class="nav-section-label">Menú Principal</span>
-    ${navLinks}
+    ${navHTML}
     <div class="sidebar-footer">
-      <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);margin-bottom:10px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--grad-main);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:white;flex-shrink:0;">${initials}</div>
-        <div style="overflow:hidden;">
-          <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
-          <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${email}</div>
-        </div>
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0;">${initials}</div>
+      <div style="overflow:hidden;flex:1;">
+        <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+        <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${email}</div>
       </div>
-      <button onclick="logout()" class="nav-link" style="width:100%;border:none;cursor:pointer;background:none;text-align:left;">
-        <span class="icon">↩</span> Cerrar sesión
-      </button>
+      <button onclick="logout()" title="Cerrar sesion"
+        style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:18px;padding:4px;transition:color 0.2s;"
+        onmouseover="this.style.color='var(--pink)'"
+        onmouseout="this.style.color='var(--text-muted)'">&#x2192;</button>
     </div>
   `;
 }
 
-/* ── TOAST ── */
 function showToast(message, type = 'success') {
   let toast = document.getElementById('toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'toast';
-    document.body.appendChild(toast);
-  }
+  if (!toast) { toast = document.createElement('div'); toast.id = 'toast'; document.body.appendChild(toast); }
   toast.className = `toast ${type}`;
-  toast.innerHTML = `${type === 'success' ? '✓' : '✕'} ${message}`;
+  toast.innerHTML = `${type === 'success' ? '&#10003;' : '&#10005;'} ${message}`;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
-/* ── OPENAI ── */
 async function askOpenAI(systemPrompt, userPrompt) {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
