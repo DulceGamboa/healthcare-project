@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// Controller for managing patients in the system
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -15,6 +16,7 @@ public class UserController {
 
     public UserController(UserService userService) { this.userService = userService; }
 
+    // Returns all patients from the database
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
@@ -25,6 +27,7 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+    // Creates a new patient record
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
         return userService.createUser(user);
@@ -35,6 +38,7 @@ public class UserController {
         return userService.updateUser(id, updatedUser);
     }
 
+    // Deletes a patient by their ID
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
