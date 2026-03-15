@@ -154,7 +154,6 @@
 <div id="toast" class="toast"></div>
 <script src="js/app.js"></script>
 <script>
-  localStorage.removeItem('mp_token');
 if (!requireAuth()) throw new Error('No auth');
 
   document.getElementById('sidebar').innerHTML = renderSidebar('dashboard');
