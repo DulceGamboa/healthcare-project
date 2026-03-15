@@ -1,5 +1,5 @@
 const API = 'http://localhost:8080/api';
-const OPENAI_API_KEY = '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';
+const OPENAI_API_KEY = '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';
 
 function getToken()    { return localStorage.getItem('mp_token'); }
 function getUserName() { return localStorage.getItem('mp_name') || 'Usuario'; }

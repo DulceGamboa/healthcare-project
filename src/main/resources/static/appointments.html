@@ -34,7 +34,7 @@
       <div class="stat-card sc-4"><div class="stat-number" id="statCancelled">—</div><div class="stat-label">Canceladas</div></div>
     </div>
 
-    <div class="grid-2 mb-6" style="width:100%;">
+    <div class="grid-3 mb-6">
       <div class="img-card">
         <img src="https://images.unsplash.com/photo-1576671081837-49000212a370?w=600&q=80" alt="Consulta">
         <div class="img-card-body">
@@ -44,18 +44,30 @@
         </div>
       </div>
       <div class="img-card">
-  <img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=600&q=80" alt="Seguimiento" style="object-position:center;">
-  <div class="img-card-body">
-    <div class="img-card-icon" style="background:var(--teal-soft);">&#x1F4CA;</div>
-    <h3>Seguimiento Continuo</h3>
-    <p>Marca una cita como cumplida y se eliminara automaticamente.</p>
-  </div>
-</div>
+        <img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=600&q=80" alt="Seguimiento" style="object-position:center;">
+        <div class="img-card-body">
+          <div class="img-card-icon" style="background:var(--teal-soft);">&#x1F4CA;</div>
+          <h3>Seguimiento Continuo</h3>
+          <p>Marca una cita como cumplida y se eliminara automaticamente.</p>
+        </div>
+      </div>
+      <div class="img-card">
+        <img src="https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=600&q=80" alt="Historial">
+        <div class="img-card-body">
+          <div class="img-card-icon" style="background:var(--purple-soft);">&#x1F4CB;</div>
+          <h3>Historial de Citas</h3>
+          <p>Consulta el historial completo de todas tus citas medicas anteriores.</p>
+        </div>
+      </div>
+    </div>
 
-<div class="card" style="margin-top:16px;width:100%;align-self:stretch;">
-  <div id="tableContainer">
-    <div style="text-align:center;padding:30px 20px;"><div class="spinner"></div></div>
-  </div>
+    <div class="card" style="margin-top:16px;">
+      <div id="tableContainer">
+        <div style="text-align:center;padding:30px 20px;"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
 <!-- MODAL NUEVA CITA -->
@@ -255,6 +267,21 @@
     } catch { showToast('Error al eliminar', 'error'); }
   }
 
+  async function confirmarCumplida() {
+  document.getElementById('modalCumplida').classList.remove('open');
+  if (!pendingDeleteId) return;
+  try {
+    const res = await authFetch(`${API}/appointments/${pendingDeleteId}/complete`, {
+      method: 'POST'
+    });
+    if (!res.ok) throw new Error();
+    showToast('Cita marcada como completada');
+    pendingDeleteId = null;
+    loadAppointments();
+  } catch {
+    showToast('Error al procesar la cita', 'error');
+  }
+}
   loadAppointments();
 </script>
 </body>
