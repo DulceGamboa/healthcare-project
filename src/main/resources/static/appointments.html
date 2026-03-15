@@ -3,64 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Citas Médicas — MediPlus</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <title>Citas Medicas — MediPlus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
-
   <main class="main">
-    <div class="page-header flex items-center justify-between">
-      <div>
-        <h1>📅 Citas Médicas</h1>
-        <p>Gestión de citas y consultas médicas</p>
+
+    <div class="page-hero">
+      <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200&q=80" alt="Citas">
+      <div class="page-hero-overlay">
+        <div class="page-hero-text">
+          <h2>Citas Medicas</h2>
+          <p>Gestiona y da seguimiento a todas tus consultas</p>
+        </div>
       </div>
+    </div>
+
+    <div class="page-header flex items-center justify-between">
+      <div><h1>Citas Medicas</h1><p>Registro y seguimiento de consultas</p></div>
       <button class="btn btn-primary" onclick="openModal()">+ Nueva Cita</button>
+    </div>
+
+    <div class="stats-grid mb-6">
+      <div class="stat-card sc-1"><div class="stat-number" id="statTotal">—</div><div class="stat-label">Total Citas</div></div>
+      <div class="stat-card sc-2"><div class="stat-number" id="statPending">—</div><div class="stat-label">Pendientes</div></div>
+      <div class="stat-card sc-3"><div class="stat-number" id="statDone">—</div><div class="stat-label">Completadas</div></div>
+      <div class="stat-card sc-4"><div class="stat-number" id="statCancelled">—</div><div class="stat-label">Canceladas</div></div>
+    </div>
+
+    <div class="grid-2 mb-6">
+      <div class="img-card">
+        <img src="https://images.unsplash.com/photo-1576671081837-49000212a370?w=600&q=80" alt="Consulta">
+        <div class="img-card-body">
+          <div class="img-card-icon" style="background:var(--purple-soft);">&#x1FA7A;</div>
+          <h3>Consultas Generales</h3>
+          <p>Registra cada visita medica con fecha, motivo y estado.</p>
+        </div>
+      </div>
+      <div class="img-card">
+        <img src="https://images.unsplash.com/photo-1588776814546-1ffebb5c0de2?w=600&q=80" alt="Seguimiento">
+        <div class="img-card-body">
+          <div class="img-card-icon" style="background:var(--teal-soft);">&#x1F4CA;</div>
+          <h3>Seguimiento Continuo</h3>
+          <p>Marca una cita como cumplida y se eliminara automaticamente.</p>
+        </div>
+      </div>
     </div>
 
     <div class="card">
       <div id="tableContainer">
-        <div style="text-align:center;padding:40px;">
-          <div class="spinner"></div>
-        </div>
+        <div style="text-align:center;padding:40px;"><div class="spinner"></div></div>
       </div>
     </div>
+
   </main>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL NUEVA CITA -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">📅 Nueva Cita</span>
-      <button class="modal-close" onclick="closeModal()">×</button>
+      <span class="modal-title">Nueva Cita</span>
+      <button class="modal-close" onclick="closeModal()">x</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">Motivo de la cita</label>
-      <input type="text" class="form-input" id="fReason" placeholder="Ej: Consulta general, Control de diabetes...">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Fecha de la cita</label>
-      <input type="date" class="form-input" id="fDate">
-    </div>
+    <div class="form-group"><label class="form-label">Motivo</label><input type="text" class="form-input" id="fReason" placeholder="Consulta general..."></div>
+    <div class="form-group"><label class="form-label">Fecha</label><input type="date" class="form-input" id="fDate"></div>
     <div class="form-group">
       <label class="form-label">Estado</label>
       <select class="form-input" id="fStatus">
-        <option value="Pendiente">Pendiente</option>
-        <option value="Confirmada">Confirmada</option>
-        <option value="Completada">Completada</option>
-        <option value="Cancelada">Cancelada</option>
+        <option>Pendiente</option>
+        <option>Confirmada</option>
+        <option>Completada</option>
+        <option>Cancelada</option>
       </select>
     </div>
-    <div class="form-group">
-      <label class="form-label">Paciente</label>
-      <select class="form-input" id="fUserId">
-        <option value="">Selecciona un paciente...</option>
-      </select>
-    </div>
+    <div class="form-group"><label class="form-label">Paciente</label><select class="form-input" id="fUserId"><option value="">Selecciona...</option></select></div>
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn btn-primary w-full" onclick="saveAppointment()">Guardar</button>
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
@@ -68,31 +88,44 @@
   </div>
 </div>
 
-<div id="toast" class="toast"></div>
+<!-- MODAL CITA CUMPLIDA -->
+<div class="modal-overlay" id="modalCumplida">
+  <div class="modal" style="max-width:400px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:12px;">&#x2705;</div>
+    <div style="font-family:'Fraunces',serif;font-size:22px;color:var(--text);margin-bottom:8px;">Cita Cumplida</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:24px;">La cita ha sido marcada como completada y sera eliminada del registro activo.</div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-primary" onclick="confirmarCumplida()">Si, eliminar</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modalCumplida').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
+<div id="toast" class="toast"></div>
 <script src="js/app.js"></script>
 <script>
   if (!requireAuth()) throw new Error('No auth');
   document.getElementById('sidebar').innerHTML = renderSidebar('appointments');
 
-  const statusColors = {
-    'Pendiente':  'badge-yellow',
-    'Confirmada': 'badge-blue',
-    'Completada': 'badge-green',
-    'Cancelada':  'badge-red',
-  };
+  const statusColors = { Pendiente:'badge-yellow', Confirmada:'badge-teal', Completada:'badge-green', Cancelada:'badge-red' };
+  let pendingDeleteId = null;
 
   async function loadAppointments() {
     try {
-      const res          = await authFetch(`${API}/appointments`);
-      const appointments = await res.json();
+      const res  = await authFetch(`${API}/appointments`);
+      const apts = await res.json();
 
-      if (!appointments.length) {
+      document.getElementById('statTotal').textContent     = apts.length;
+      document.getElementById('statPending').textContent   = apts.filter(a => a.status === 'Pendiente').length;
+      document.getElementById('statDone').textContent      = apts.filter(a => a.status === 'Completada').length;
+      document.getElementById('statCancelled').textContent = apts.filter(a => a.status === 'Cancelada').length;
+
+      if (!apts.length) {
         document.getElementById('tableContainer').innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">📅</div>
+            <div class="empty-icon">&#128197;</div>
             <h3>Sin citas registradas</h3>
-            <p>Agrega la primera con el botón "Nueva Cita"</p>
+            <p>Agrega la primera con el boton Nueva Cita</p>
           </div>`;
         return;
       }
@@ -111,15 +144,40 @@
               </tr>
             </thead>
             <tbody>
-              ${appointments.map(a => `
+              ${apts.map(a => `
                 <tr>
                   <td>#${a.id}</td>
-                  <td>${a.reason || '—'}</td>
-                  <td>${a.appointmentDate || '—'}</td>
-                  <td><span class="badge ${statusColors[a.status] || 'badge-purple'}">${a.status || '—'}</span></td>
-                  <td>${a.user ? a.user.name : '—'}</td>
                   <td>
-                    <button class="btn btn-danger btn-sm" onclick="deleteAppointment(${a.id})">🗑 Eliminar</button>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:30px;height:30px;border-radius:8px;background:var(--purple-soft);display:flex;align-items:center;justify-content:center;">&#x1FA7A;</div>
+                      ${a.reason || '—'}
+                    </div>
+                  </td>
+                  <td>
+                    <div style="background:var(--teal-soft);color:#2a9aaa;border-radius:8px;padding:4px 10px;display:inline-block;font-size:12px;font-weight:600;">
+                      ${a.appointmentDate || '—'}
+                    </div>
+                  </td>
+                  <td><span class="badge ${statusColors[a.status] || 'badge-purple'}">${a.status || '—'}</span></td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:28px;height:28px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:white;">
+                        ${a.user ? a.user.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase() : '?'}
+                      </div>
+                      ${a.user ? a.user.name : '—'}
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                      ${a.status !== 'Completada' && a.status !== 'Cancelada' ? `
+                        <button class="btn btn-sm"
+                          style="background:linear-gradient(135deg,#10b981,#4dbccc);color:white;border:none;"
+                          onclick="abrirModalCumplida(${a.id})">
+                          Cita cumplida
+                        </button>
+                      ` : ''}
+                      <button class="btn btn-danger btn-sm" onclick="deleteAppointment(${a.id})">Eliminar</button>
+                    </div>
                   </td>
                 </tr>
               `).join('')}
@@ -131,72 +189,72 @@
     }
   }
 
-  async function loadPatients() {
+  function abrirModalCumplida(id) {
+    pendingDeleteId = id;
+    document.getElementById('modalCumplida').classList.add('open');
+  }
+
+  async function confirmarCumplida() {
+    document.getElementById('modalCumplida').classList.remove('open');
+    if (!pendingDeleteId) return;
     try {
-      const res   = await authFetch(`${API}/users`);
-      const users = await res.json();
-      const sel   = document.getElementById('fUserId');
-      sel.innerHTML = '<option value="">Selecciona un paciente...</option>';
-      users.forEach(u => {
-        const opt       = document.createElement('option');
-        opt.value       = u.id;
-        opt.textContent = `${u.name} (ID: ${u.id})`;
-        sel.appendChild(opt);
-      });
+      await authFetch(`${API}/appointments/${pendingDeleteId}`, { method: 'DELETE' });
+      showToast('Cita marcada como cumplida y eliminada');
+      pendingDeleteId = null;
+      loadAppointments();
     } catch {
-      showToast('Error al cargar pacientes', 'error');
+      showToast('Error al procesar la cita', 'error');
     }
   }
 
-  function openModal() {
+  async function loadPatients() {
+    const res   = await authFetch(`${API}/users`);
+    const users = await res.json();
+    const sel   = document.getElementById('fUserId');
+    sel.innerHTML = '<option value="">Selecciona...</option>';
+    users.forEach(u => {
+      const o = document.createElement('option');
+      o.value = u.id;
+      o.textContent = `${u.name} (ID: ${u.id})`;
+      sel.appendChild(o);
+    });
+  }
+
+  function openModal()  {
     document.getElementById('fReason').value = '';
     document.getElementById('fDate').value   = '';
     document.getElementById('fStatus').value = 'Pendiente';
-    document.getElementById('fUserId').value = '';
     loadPatients();
     document.getElementById('modal').classList.add('open');
   }
 
-  function closeModal() {
-    document.getElementById('modal').classList.remove('open');
-  }
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
   async function saveAppointment() {
     const reason          = document.getElementById('fReason').value.trim();
     const appointmentDate = document.getElementById('fDate').value;
     const status          = document.getElementById('fStatus').value;
     const userId          = document.getElementById('fUserId').value;
-
     if (!reason || !appointmentDate || !userId) return showToast('Completa todos los campos', 'error');
-
     try {
       const res = await authFetch(`${API}/appointments`, {
         method: 'POST',
-        body: JSON.stringify({
-          reason,
-          appointmentDate,
-          status,
-          user: { id: parseInt(userId) }
-        })
+        body: JSON.stringify({ reason, appointmentDate, status, user: { id: parseInt(userId) } })
       });
-      if (!res.ok) throw new Error('Error al guardar');
+      if (!res.ok) throw new Error();
       showToast('Cita guardada correctamente');
       closeModal();
       loadAppointments();
-    } catch(e) {
-      showToast(e.message, 'error');
-    }
+    } catch { showToast('Error al guardar', 'error'); }
   }
 
   async function deleteAppointment(id) {
-    if (!confirm('¿Eliminar esta cita?')) return;
+    if (!confirm('Eliminar esta cita?')) return;
     try {
       await authFetch(`${API}/appointments/${id}`, { method: 'DELETE' });
       showToast('Cita eliminada');
       loadAppointments();
-    } catch {
-      showToast('Error al eliminar', 'error');
-    }
+    } catch { showToast('Error al eliminar', 'error'); }
   }
 
   loadAppointments();
