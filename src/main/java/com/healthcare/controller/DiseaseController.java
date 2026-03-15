@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// Controller for managing patient diseases and conditions
 @RestController
 @RequestMapping("/api/diseases")
 @CrossOrigin
@@ -17,6 +18,7 @@ public class DiseaseController {
         this.diseaseService = diseaseService;
     }
 
+     // Returns all diseases from the database
     @GetMapping
     public List<Disease> getAllDiseases() {
         return diseaseService.getAllDiseases();
@@ -27,6 +29,7 @@ public class DiseaseController {
         return diseaseService.getDiseaseById(id);
     }
 
+    // Creates a new disease record linked to a patient
     @PostMapping
     public Disease createDisease(@RequestBody Disease disease) {
         return diseaseService.createDisease(disease);
@@ -37,6 +40,7 @@ public class DiseaseController {
         return diseaseService.updateDisease(id, disease);
     }
 
+    // Deletes a disease record by its ID
     @DeleteMapping("/{id}")
     public void deleteDisease(@PathVariable Long id) {
         diseaseService.deleteDisease(id);
