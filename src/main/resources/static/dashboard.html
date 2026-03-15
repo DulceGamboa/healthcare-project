@@ -72,6 +72,7 @@
 <script src="js/app.js"></script>
 <script>
   if (!requireAuth()) throw new Error('No auth');
+
   document.getElementById('sidebar').innerHTML = renderSidebar('dashboard');
 
   const hour = new Date().getHours();
@@ -79,49 +80,27 @@
   document.getElementById('heroGreeting').textContent = `${greeting}, ${getUserName()}`;
 
   async function loadStats() {
-    for (const ep of [
+    const endpoints = [
       { id: 'statDiseases',     url: '/diseases' },
       { id: 'statAppointments', url: '/appointments' },
       { id: 'statSurgeries',    url: '/surgeries' },
       { id: 'statMeds',         url: '/medications' },
-    ]) {
+    ];
+    for (const ep of endpoints) {
       try {
         const res  = await authFetch(`${API}${ep.url}`);
         const data = await res.json();
-        document.getElementById(ep.id).textContent = Array.isArray(data) ? data.length : '—';
+        const el   = document.getElementById(ep.id);
+        if (el) el.textContent = Array.isArray(data) ? data.length : '—';
       } catch {
-        document.getElementById(ep.id).textContent = '—';
+        const el = document.getElementById(ep.id);
+        if (el) el.textContent = '—';
       }
     }
   }
 
   loadStats();
 </script>
-
-  // Render sidebar
-  document.getElementById('sidebar').innerHTML = renderSidebar('dashboard');
-
-  // Cargar estadísticas desde el backend
-  async function loadStats() {
-    const endpoints = [
-      { id: 'statUsers',        url: '/users' },
-      { id: 'statDiseases',     url: '/diseases' },
-      { id: 'statAppointments', url: '/appointments' },
-      { id: 'statSurgeries',    url: '/surgeries' },
-    ];
-
-    for (const ep of endpoints) {
-      try {
-        const res  = await authFetch(`${API}${ep.url}`);
-        const data = await res.json();
-        document.getElementById(ep.id).textContent = Array.isArray(data) ? data.length : '—';
-      } catch {
-        document.getElementById(ep.id).textContent = '—';
-      }
-    }
-  }
-
-  loadStats();
 </script>
 </body>
 </html>
