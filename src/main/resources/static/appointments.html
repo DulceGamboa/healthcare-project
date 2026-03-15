@@ -30,7 +30,7 @@
     <div class="stats-grid mb-6">
       <div class="stat-card sc-1"><div class="stat-number" id="statTotal">—</div><div class="stat-label">Total Citas</div></div>
       <div class="stat-card sc-2"><div class="stat-number" id="statPending">—</div><div class="stat-label">Pendientes</div></div>
-      <div class="stat-card sc-3"><div class="stat-number" id="statDone">—</div><div class="stat-label">Completadas</div></div>
+      <div class="stat-card sc-3"><div class="stat-number" id="statDone">—</div><div class="stat-label">Cumplidas</div></div>
       <div class="stat-card sc-4"><div class="stat-number" id="statCancelled">—</div><div class="stat-label">Canceladas</div></div>
     </div>
 
@@ -44,13 +44,14 @@
         </div>
       </div>
       <div class="img-card">
-  <img src="https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=600&q=80" alt="Seguimiento">
-  <div class="img-card-body">
-    <div class="img-card-icon" style="background:var(--teal-soft);">&#x1F4CA;</div>
-    <h3>Seguimiento Continuo</h3>
-    <p>Marca una cita como cumplida y se eliminara automaticamente.</p>
-  </div>
-</div>
+        <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&q=80" alt="Seguimiento">
+        <div class="img-card-body">
+          <div class="img-card-icon" style="background:var(--teal-soft);">&#x1F4CA;</div>
+          <h3>Seguimiento Continuo</h3>
+          <p>Marca una cita como cumplida y se eliminara automaticamente.</p>
+        </div>
+      </div>
+    </div>
 
     <div class="card">
       <div id="tableContainer">
@@ -60,15 +61,6 @@
 
   </main>
 </div>
-
-<div class="stats-grid mb-6">
-  <div class="stat-card sc-1"><div class="stat-number" id="statTotal">—</div><div class="stat-label">Total Citas</div></div>
-  <div class="stat-card sc-2"><div class="stat-number" id="statPending">—</div><div class="stat-label">Pendientes</div></div>
-  <div class="stat-card sc-3"><div class="stat-number" id="statDone">—</div><div class="stat-label">Cumplidas</div></div>
-  <div class="stat-card sc-4"><div class="stat-number" id="statCancelled">—</div><div class="stat-label">Canceladas</div></div>
-  <div class="stat-card sc-1"><div class="stat-number" id="statCompleted">—</div><div class="stat-label">Completadas</div></div>
-</div>
-
 
 <!-- MODAL NUEVA CITA -->
 <div class="modal-overlay" id="modal">
@@ -101,7 +93,7 @@
   <div class="modal" style="max-width:400px;text-align:center;">
     <div style="font-size:48px;margin-bottom:12px;">&#x2705;</div>
     <div style="font-family:'Fraunces',serif;font-size:22px;color:var(--text);margin-bottom:8px;">Cita Cumplida</div>
-    <div style="font-size:13px;color:var(--text-muted);margin-bottom:24px;">La cita ha sido marcada como completada y sera eliminada del registro activo.</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:24px;">La cita sera marcada como cumplida y eliminada del registro activo.</div>
     <div style="display:flex;gap:10px;justify-content:center;">
       <button class="btn btn-primary" onclick="confirmarCumplida()">Si, eliminar</button>
       <button class="btn btn-ghost" onclick="document.getElementById('modalCumplida').classList.remove('open')">Cancelar</button>
@@ -112,10 +104,8 @@
 <div id="toast" class="toast"></div>
 <script src="js/app.js"></script>
 <script>
-if (!requireAuth()) throw new Error('No auth');
+  if (!requireAuth()) throw new Error('No auth');
   document.getElementById('sidebar').innerHTML = renderSidebar('appointments');
-
-  document.getElementById('statCompleted').textContent = apts.filter(a => a.status === 'Completada').length;
 
   const statusColors = { Pendiente:'badge-yellow', Confirmada:'badge-teal', Completada:'badge-green', Cancelada:'badge-red' };
   let pendingDeleteId = null;
@@ -125,9 +115,9 @@ if (!requireAuth()) throw new Error('No auth');
       const res  = await authFetch(`${API}/appointments`);
       const apts = await res.json();
 
-      document.getElementById('statTotal').textContent     = apts.length;
-      document.getElementById('statPending').textContent   = apts.filter(a => a.status === 'Pendiente').length;
-      document.getElementById('statDone').textContent      = apts.filter(a => a.status === 'Completada').length;
+      document.getElementById('statTotal').textContent    = apts.length;
+      document.getElementById('statPending').textContent  = apts.filter(a => a.status === 'Pendiente').length;
+      document.getElementById('statDone').textContent     = apts.filter(a => a.status === 'Completada').length;
       document.getElementById('statCancelled').textContent = apts.filter(a => a.status === 'Cancelada').length;
 
       if (!apts.length) {
@@ -223,14 +213,14 @@ if (!requireAuth()) throw new Error('No auth');
     const sel   = document.getElementById('fUserId');
     sel.innerHTML = '<option value="">Selecciona...</option>';
     users.forEach(u => {
-      const o = document.createElement('option');
-      o.value = u.id;
+      const o       = document.createElement('option');
+      o.value       = u.id;
       o.textContent = `${u.name} (ID: ${u.id})`;
       sel.appendChild(o);
     });
   }
 
-  function openModal()  {
+  function openModal() {
     document.getElementById('fReason').value = '';
     document.getElementById('fDate').value   = '';
     document.getElementById('fStatus').value = 'Pendiente';
@@ -238,7 +228,9 @@ if (!requireAuth()) throw new Error('No auth');
     document.getElementById('modal').classList.add('open');
   }
 
-  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+  }
 
   async function saveAppointment() {
     const reason          = document.getElementById('fReason').value.trim();
