@@ -61,6 +61,15 @@
   </main>
 </div>
 
+<div class="stats-grid mb-6">
+  <div class="stat-card sc-1"><div class="stat-number" id="statTotal">—</div><div class="stat-label">Total Citas</div></div>
+  <div class="stat-card sc-2"><div class="stat-number" id="statPending">—</div><div class="stat-label">Pendientes</div></div>
+  <div class="stat-card sc-3"><div class="stat-number" id="statDone">—</div><div class="stat-label">Cumplidas</div></div>
+  <div class="stat-card sc-4"><div class="stat-number" id="statCancelled">—</div><div class="stat-label">Canceladas</div></div>
+  <div class="stat-card sc-1"><div class="stat-number" id="statCompleted">—</div><div class="stat-label">Completadas</div></div>
+</div>
+
+
 <!-- MODAL NUEVA CITA -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
@@ -106,6 +115,8 @@
   localStorage.removeItem('mp_token');
 if (!requireAuth()) throw new Error('No auth');
   document.getElementById('sidebar').innerHTML = renderSidebar('appointments');
+
+  document.getElementById('statCompleted').textContent = apts.filter(a => a.status === 'Completada').length;
 
   const statusColors = { Pendiente:'badge-yellow', Confirmada:'badge-teal', Completada:'badge-green', Cancelada:'badge-red' };
   let pendingDeleteId = null;
