@@ -1,0 +1,297 @@
+================================================================
+PROJECT REQUIREMENTS — MediPlus Healthcare System
+================================================================
+Course: Software Development / Information Systems
+Student: Dulce Gamboa, Brenda Mendoza and Camila López
+Date: March 2026
+================================================================
+
+----------------------------------------------------------------
+1. PROJECT OVERVIEW
+----------------------------------------------------------------
+MediPlus is a web-based medical management platform that allows
+healthcare staff to manage patients, diseases, appointments,
+surgeries, rehabilitation therapies, medications and clinical
+history. The system integrates Artificial Intelligence modules
+powered by OpenAI to generate personalized diet and
+rehabilitation plans, and includes a 24/7 virtual medical
+assistant.
+
+----------------------------------------------------------------
+2. FUNCTIONAL REQUIREMENTS
+----------------------------------------------------------------
+
+FR-01  The system must allow registering new users/patients
+       with name, email address and age.
+
+FR-02  The system must allow users to log in with email and
+       password, returning a JWT authentication token.
+
+FR-03  The system must require authentication to access any
+       internal module. Unauthenticated users are redirected
+       to the login page.
+
+FR-04  The system must allow registering diseases linked
+       to a patient (disease name, patient ID).
+
+FR-05  The system must allow registering medical appointments
+       with reason, date, status and associated patient.
+       Valid statuses: Pendiente, Confirmada, Completada,
+       Cancelada.
+
+FR-06  The system must allow registering surgeries with
+       type, date, clinical notes and associated patient.
+
+FR-07  The system must allow registering rehabilitation
+       therapies with type, start/end dates, progress status
+       and associated patient.
+       Valid progress values: Iniciado, En progreso,
+       Completado, Suspendido.
+
+FR-08  The system must allow registering medications with
+       name, dosage, frequency, start/end dates and
+       associated patient.
+
+FR-09  The system must display a unified clinical history
+       organized in tabs: diseases, appointments, surgeries,
+       therapies and medications.
+
+FR-10  The dashboard must display statistics counters for:
+       total diseases, appointments, surgeries and medications.
+
+FR-11  The AI Nutrition module must generate a complete diet
+       plan from the patient's medical condition, restrictions
+       and nutritional goal.
+
+FR-12  The AI Rehabilitation module must generate a 3-phase
+       exercise plan (initial, intermediate, advanced) from
+       the injury type and activity level.
+
+FR-13  The Virtual Assistant module must allow real-time
+       conversation with a language model for general
+       medical queries.
+
+FR-14  The system must allow deleting patients, diseases,
+       appointments, surgeries, therapies and medications.
+
+FR-15  The system must display toast notifications for
+       success or error on every CRUD operation.
+
+----------------------------------------------------------------
+3. NON-FUNCTIONAL REQUIREMENTS
+----------------------------------------------------------------
+
+NFR-01  SECURITY: All API routes (except /api/auth/**)
+        must be protected with JWT Bearer Token
+        authentication. Passwords must be stored as
+        BCrypt hashes.
+
+NFR-02  PERFORMANCE: The dashboard must load all statistics
+        in under 3 seconds using parallel API calls.
+
+NFR-03  AVAILABILITY: The backend must run on port 8080
+        and remain available while the server is active.
+
+NFR-04  USABILITY: The interface must be intuitive, with
+        real medical images, clear typography and a color
+        system consistent with the project's visual identity
+        (purple, teal, pink).
+
+NFR-05  COMPATIBILITY: The frontend must work on modern
+        browsers: Chrome, Firefox, Edge, Safari
+        (last 2 versions).
+
+NFR-06  SCALABILITY: The database must use proper
+        relationships with foreign keys to allow future
+        system expansion.
+
+NFR-07  MAINTAINABILITY: Java code must include comments
+        in English. JavaScript code must follow clear
+        naming conventions.
+
+NFR-08  PORTABILITY: The project must run on Windows,
+        macOS and Linux using Maven Wrapper (mvnw).
+
+----------------------------------------------------------------
+4. TECHNICAL REQUIREMENTS
+----------------------------------------------------------------
+
+BACKEND
+  Language:       Java 17
+  Framework:      Spring Boot 3.2.5
+  ORM:            Spring Data JPA / Hibernate 6
+  Security:       Spring Security + JWT (jjwt 0.11.5)
+  Database:       MySQL 8.0
+  Connection pool: HikariCP (included in Spring Boot)
+  Build tool:     Apache Maven 3.9+
+
+FRONTEND
+  HTML5, CSS3, JavaScript ES6+ (Vanilla — no frameworks)
+  Typography: Fraunces (serif) + Plus Jakarta Sans
+  Images: Unsplash API (direct URLs, no key required)
+  Served as static files by Spring Boot from:
+  src/main/resources/static/
+
+ARTIFICIAL INTELLIGENCE
+  Provider:    OpenAI API
+  Model:       gpt-3.5-turbo
+  Endpoint:    /v1/chat/completions
+  API Key:     Set in js/app.js (OPENAI_API_KEY variable)
+
+DEVELOPMENT TOOLS
+  IDE:         IntelliJ IDEA (recommended) / VS Code
+  Version ctrl: Git + GitHub
+  Project mgmt: Azure Boards (required by the course)
+  API testing: Postman or Bruno
+
+----------------------------------------------------------------
+5. DATABASE STRUCTURE
+----------------------------------------------------------------
+
+Table: users
+  id            BIGINT PK AUTO_INCREMENT
+  name          VARCHAR(255) NOT NULL
+  email         VARCHAR(255) NOT NULL UNIQUE
+  age           INT
+
+Table: auth_users
+  id            BIGINT PK AUTO_INCREMENT
+  name          VARCHAR(255) NOT NULL
+  email         VARCHAR(255) NOT NULL UNIQUE
+  password      VARCHAR(255) NOT NULL  -- BCrypt hash
+  role          VARCHAR(50) DEFAULT 'PATIENT'
+
+Table: diseases
+  id            BIGINT PK AUTO_INCREMENT
+  disease_name  VARCHAR(255) NOT NULL
+  user_id       BIGINT FK -> users.id
+
+Table: appointments
+  id                BIGINT PK AUTO_INCREMENT
+  reason            VARCHAR(255)
+  appointment_date  VARCHAR(50)
+  status            VARCHAR(50)
+  user_id           BIGINT FK -> users.id
+
+Table: surgeries
+  id            BIGINT PK AUTO_INCREMENT
+  surgery_type  VARCHAR(255)
+  surgery_date  VARCHAR(50)
+  notes         VARCHAR(500)
+  user_id       BIGINT FK -> users.id
+
+Table: rehabilitations
+  id            BIGINT PK AUTO_INCREMENT
+  therapy_type  VARCHAR(255)
+  start_date    VARCHAR(50)
+  end_date      VARCHAR(50)
+  progress      VARCHAR(50)
+  user_id       BIGINT FK -> users.id
+
+Table: medications
+  id               BIGINT PK AUTO_INCREMENT
+  medication_name  VARCHAR(255) NOT NULL
+  dosage           VARCHAR(100)
+  frequency        VARCHAR(100)
+  start_date       VARCHAR(50)
+  end_date         VARCHAR(50)
+  user_id          BIGINT FK -> users.id
+
+----------------------------------------------------------------
+6. API ENDPOINTS
+----------------------------------------------------------------
+
+PUBLIC (no token required)
+  POST   /api/auth/register       Register new user
+  POST   /api/auth/login          Login, returns JWT token
+  GET    /api/auth/verify         Verify token validity
+
+PROTECTED (require Authorization: Bearer <token> header)
+  GET    /api/users               List all patients
+  POST   /api/users               Create patient
+  DELETE /api/users/{id}          Delete patient
+
+  GET    /api/diseases            List all diseases
+  POST   /api/diseases            Create disease
+  DELETE /api/diseases/{id}       Delete disease
+
+  GET    /api/appointments        List all appointments
+  POST   /api/appointments        Create appointment
+  DELETE /api/appointments/{id}   Delete appointment
+
+  GET    /api/surgeries           List all surgeries
+  POST   /api/surgeries           Create surgery
+  DELETE /api/surgeries/{id}      Delete surgery
+
+  GET    /api/rehabilitations     List all therapies
+  POST   /api/rehabilitations     Create therapy
+  DELETE /api/rehabilitations/{id} Delete therapy
+
+  GET    /api/medications         List all medications
+  POST   /api/medications         Create medication
+  DELETE /api/medications/{id}    Delete medication
+
+----------------------------------------------------------------
+7. FOLDER STRUCTURE
+----------------------------------------------------------------
+
+healthcare-project/
+├── src/
+│   ├── main/
+│   │   ├── java/com/healthcare/
+│   │   │   ├── HealthcareApiApplication.java
+│   │   │   ├── auth/
+│   │   │   │   ├── AuthController.java
+│   │   │   │   ├── AuthUser.java
+│   │   │   │   ├── AuthUserRepository.java
+│   │   │   │   ├── JwtFilter.java
+│   │   │   │   ├── JwtUtil.java
+│   │   │   │   └── SecurityConfig.java
+│   │   │   ├── controller/
+│   │   │   │   ├── UserController.java
+│   │   │   │   ├── DiseaseController.java
+│   │   │   │   ├── AppointmentController.java
+│   │   │   │   ├── SurgeryController.java
+│   │   │   │   ├── RehabilitationController.java
+│   │   │   │   └── MedicationController.java
+│   │   │   ├── model/
+│   │   │   │   ├── User.java
+│   │   │   │   ├── Disease.java
+│   │   │   │   ├── Appointment.java
+│   │   │   │   ├── Surgery.java
+│   │   │   │   ├── Rehabilitation.java
+│   │   │   │   └── Medication.java
+│   │   │   └── repository/
+│   │   │       ├── UserRepository.java
+│   │   │       ├── DiseaseRepository.java
+│   │   │       ├── AppointmentRepository.java
+│   │   │       ├── SurgeryRepository.java
+│   │   │       ├── RehabilitationRepository.java
+│   │   │       └── MedicationRepository.java
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── static/
+│   │           ├── css/styles.css
+│   │           ├── js/app.js
+│   │           ├── img/logo.jpeg
+│   │           ├── login.html
+│   │           ├── dashboard.html
+│   │           ├── profile.html
+│   │           ├── diseases.html
+│   │           ├── appointments.html
+│   │           ├── surgery.html
+│   │           ├── rehabilitation.html
+│   │           ├── medications.html
+│   │           ├── nutrition.html
+│   │           ├── chat.html
+│   │           └── history.html
+│   └── test/
+├── pom.xml
+├── mvnw / mvnw.cmd
+├── README.md
+├── REQUIREMENTS.txt
+└── USER_GUIDE.txt
+
+================================================================
+END OF REQUIREMENTS DOCUMENT
+================================================================
