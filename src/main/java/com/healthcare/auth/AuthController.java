@@ -5,11 +5,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
+// Controller for handling user authentication (register and login)
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin
 public class AuthController {
 
+    // Password encoder using BCrypt algorithm
     private final AuthUserRepository repo;
     private final PasswordEncoder encoder;
     private final JwtUtil jwtUtil;
@@ -20,6 +22,7 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
+    // Registers a new user and returns a JWT token
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
         if (repo.existsByEmail(req.getEmail()))
@@ -29,7 +32,7 @@ public class AuthController {
         AuthUser user = new AuthUser();
         user.setName(req.getName());
         user.setEmail(req.getEmail());
-        user.setPassword(encoder.encode(req.getPassword()));
+        user.setPassword(encoder.encode(req.getPassword()));   // Hash the password before saving
         repo.save(user);
 
         return ResponseEntity.ok(Map.of(
@@ -39,6 +42,7 @@ public class AuthController {
         ));
     }
 
+    // Authenticates a user and returns a JWT token
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         return repo.findByEmail(req.getEmail())
@@ -52,6 +56,7 @@ public class AuthController {
                 .body(Map.of("error", "Correo o contraseña incorrectos")));
     }
 
+    // Verifies if a JWT token is valid
     @GetMapping("/verify")
     public ResponseEntity<?> verify(@RequestHeader("Authorization") String header) {
         if (header != null && header.startsWith("Bearer ")) {
