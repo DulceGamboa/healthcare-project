@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentos RAG — MediPlus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main">
+
+    <div class="page-hero">
+      <img src="https://images.unsplash.com/photo-1568667256549-094345857637?w=1200&q=80" alt="Documentos">
+      <div class="page-hero-overlay">
+        <div class="page-hero-text">
+          <h2>Documentos Medicos con IA</h2>
+          <p>Sube un PDF y consulta al asistente sobre su contenido</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Documentos RAG</h1>
+      <p>Carga un documento PDF y hazle preguntas a la IA basadas en su contenido real</p>
+    </div>
+
+    <!-- SUBIR PDF -->
+    <div style="background:var(--grad-dark);border-radius:var(--radius);padding:24px;margin-bottom:24px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-30px;right:-30px;width:130px;height:130px;background:radial-gradient(circle,rgba(77,188,204,0.2) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="position:relative;z-index:1;">
+        <div style="font-family:'Fraunces',serif;font-size:18px;font-style:italic;color:var(--teal-light);margin-bottom:6px;">Cargar documento PDF</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:18px;">Prospectos de medicamentos, resultados de examenes, informes medicos</div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="display:block;font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:6px;">Selecciona un archivo PDF</label>
+          <input type="file" id="pdfFile" accept=".pdf" onchange="loadPdf(this)"
+            style="width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 14px;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;">
+        </div>
+        <div id="pdfStatus" style="font-size:12px;color:rgba(255,255,255,0.4);display:none;">
+          <div class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;border-top-color:var(--teal);"></div>
+          Leyendo PDF...
+        </div>
+      </div>
+    </div>
+
+    <!-- VISTA PREVIA Y CONSULTA -->
+    <div id="querySection" style="display:none;">
+
+      <!-- Info del documento -->
+      <div class="card mb-6">
+        <div class="card-title">Documento cargado</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--pink-soft);display:flex;align-items:center;justify-content:center;font-size:20px;">&#128196;</div>
+          <div>
+            <div style="font-weight:700;font-size:14px;color:var(--text);" id="pdfName"></div>
+            <div style="font-size:12px;color:var(--text-muted);" id="pdfInfo"></div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;max-height:100px;overflow-y:auto;">
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em;">Vista previa</div>
+          <div id="pdfPreview" style="font-size:12px;color:var(--text-soft);line-height:1.6;"></div>
+        </div>
+      </div>
+
+      <!-- Consultar con IA -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm);margin-bottom:24px;">
+        <div class="card-title">Consultale a la IA sobre este documento</div>
+        <div class="form-group">
+          <label class="form-label">Tu pregunta</label>
+          <input type="text" class="form-input" id="ragQuestion"
+            placeholder="Ej: Cuales son los efectos secundarios? Que dosis recomienda? Que diagnostico indica?"
+            onkeydown="if(event.key==='Enter') askRag()">
+        </div>
+        <div class="chips-wrap mb-4">
+          <span class="chip chip-purple" onclick="setQ('Cuales son los efectos secundarios?')">Efectos secundarios</span>
+          <span class="chip chip-teal"   onclick="setQ('Que dosis recomienda el documento?')">Dosis recomendada</span>
+          <span class="chip chip-pink"   onclick="setQ('Cuales son las contraindicaciones?')">Contraindicaciones</span>
+          <span class="chip chip-purple" onclick="setQ('Que diagnostico o resultado indica?')">Diagnostico</span>
+          <span class="chip chip-teal"   onclick="setQ('Que recomendaciones da el documento?')">Recomendaciones</span>
+        </div>
+        <button class="btn btn-primary" id="ragBtn" onclick="askRag()">Consultar con IA</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearDoc()" style="margin-left:10px;">Cargar otro PDF</button>
+
+        <div id="ragResult" style="display:none;margin-top:16px;">
+          <div style="background:linear-gradient(135deg,var(--purple-soft),var(--teal-soft));border-radius:12px;padding:18px;">
+            <div style="font-size:12px;font-weight:700;color:var(--purple);margin-bottom:10px;">Respuesta basada en el documento:</div>
+            <div id="ragResultText" style="font-size:13px;color:var(--text-soft);line-height:1.85;white-space:pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ESTADO INICIAL -->
+    <div id="emptyState" class="card">
+      <div class="empty-state">
+        <div class="empty-icon">&#128196;</div>
+        <h3>Sin documento cargado</h3>
+        <p>Selecciona un archivo PDF arriba para comenzar</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- PDF.js de Mozilla — no requiere instalacion ni pom.xml -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script src="js/app.js"></script>
+<script>
+  if (!requireAuth()) throw new Error('No auth');
+  document.getElementById('sidebar').innerHTML = renderSidebar('documents');
+
+  // Configure PDF.js worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  let pdfText = '';
+  let pdfFileName = '';
+
+  async function loadPdf(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (!file.name.endsWith('.pdf')) {
+      return showToast('Solo se permiten archivos PDF', 'error');
+    }
+
+    document.getElementById('pdfStatus').style.display = 'block';
+    document.getElementById('querySection').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('ragResult').style.display = 'none';
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+      let fullText = '';
+      // Extract text from all pages
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page    = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items.map(item => item.str).join(' ');
+        fullText += pageText + '\n';
+      }
+
+      pdfText     = fullText.trim();
+      pdfFileName = file.name;
+
+      // Show document info
+      document.getElementById('pdfName').textContent = file.name;
+      document.getElementById('pdfInfo').textContent =
+        `${pdf.numPages} paginas · ${pdfText.length.toLocaleString()} caracteres extraidos`;
+      document.getElementById('pdfPreview').textContent =
+        pdfText.substring(0, 400) + (pdfText.length > 400 ? '...' : '');
+
+      document.getElementById('pdfStatus').style.display  = 'none';
+      document.getElementById('querySection').style.display = 'block';
+      document.getElementById('emptyState').style.display   = 'none';
+
+      showToast('PDF cargado correctamente');
+    } catch(e) {
+      document.getElementById('pdfStatus').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'block';
+      showToast('Error al leer el PDF. Verifica que no este protegido.', 'error');
+    }
+  }
+
+  function setQ(q) {
+    document.getElementById('ragQuestion').value = q;
+    document.getElementById('ragQuestion').focus();
+  }
+
+  async function askRag() {
+    const question = document.getElementById('ragQuestion').value.trim();
+    if (!question) return showToast('Escribe tu pregunta', 'error');
+    if (!pdfText)  return showToast('Primero carga un PDF', 'error');
+
+    const btn = document.getElementById('ragBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></div> Consultando...';
+    document.getElementById('ragResult').style.display = 'none';
+
+    try {
+      // Use first 3500 chars to stay within token limits
+      const context = pdfText.substring(0, 3500);
+
+      const systemPrompt =
+        `Eres un asistente medico especialista con acceso al siguiente documento:\n\n` +
+        `--- DOCUMENTO: ${pdfFileName} ---\n${context}\n--- FIN DEL DOCUMENTO ---\n\n` +
+        `Responde UNICAMENTE basandote en el contenido del documento. ` +
+        `Si la pregunta no puede responderse con el documento indicalo claramente. ` +
+        `Responde en espanol de forma clara y estructurada.`;
+
+      const result = await askOpenAI(systemPrompt, question);
+      document.getElementById('ragResultText').textContent = result;
+      document.getElementById('ragResult').style.display   = 'block';
+      document.getElementById('ragResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Respuesta generada exitosamente');
+    } catch {
+      showToast('Error al consultar. Verifica tu API key de OpenAI en app.js', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Consultar con IA';
+    }
+  }
+
+  function clearDoc() {
+    pdfText     = '';
+    pdfFileName = '';
+    document.getElementById('pdfFile').value = '';
+    document.getElementById('querySection').style.display = 'none';
+    document.getElementById('emptyState').style.display   = 'block';
+    document.getElementById('ragResult').style.display    = 'none';
+  }
+</script>
+</body>
+</html>

@@ -63,6 +63,7 @@ function renderSidebar(activePage) {
         { id: 'diseases',      label: 'Enfermedades',   href: 'diseases.html' },
         { id: 'surgery',       label: 'Cirugias',       href: 'surgery.html' },
         { id: 'medications',   label: 'Medicamentos',   href: 'medications.html' },
+        { id: 'documents', label: 'Documentos RAG', href: 'documents.html' },
       ]
     }
   ];
