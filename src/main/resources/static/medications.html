@@ -109,6 +109,63 @@
     </div>
   </div>
 </div>
+<!-- MEDICATION CALCULATOR — Exponential decay model -->
+<div style="background:var(--grad-dark);border-radius:var(--radius);padding:24px;margin-bottom:24px;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;background:radial-gradient(circle,rgba(155,109,189,0.2) 0%,transparent 70%);pointer-events:none;"></div>
+  <div style="position:relative;z-index:1;">
+    <div style="font-family:'Fraunces',serif;font-size:18px;font-style:italic;color:#c4a3d8;margin-bottom:4px;">Calculadora de Concentracion</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;">Modelo matematico de decaimiento exponencial C(t) = C₀ · e^(-kt)</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px;">
+
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;">Dosis inicial (mg)</label>
+        <input type="number" id="calcDose" value="500" min="1"
+          style="width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;"
+          oninput="calcConcentration()">
+      </div>
+
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;">Vida media (horas)</label>
+        <input type="number" id="calcHalfLife" value="6" min="0.5" step="0.5"
+          style="width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;"
+          oninput="calcConcentration()">
+      </div>
+
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;">Concentracion minima eficaz (mg)</label>
+        <input type="number" id="calcMinEffective" value="100" min="1"
+          style="width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;"
+          oninput="calcConcentration()">
+      </div>
+
+    </div>
+
+    <!-- Resultado principal -->
+    <div id="calcResult" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center;">
+        <div>
+          <div style="font-size:22px;font-weight:700;color:#c4a3d8;font-family:'Fraunces',serif;" id="resNextDose">—</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Proxima dosis en</div>
+        </div>
+        <div>
+          <div style="font-size:22px;font-weight:700;color:#4dbccc;font-family:'Fraunces',serif;" id="resConc">—</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Concentracion actual</div>
+        </div>
+        <div>
+          <div style="font-size:22px;font-weight:700;color:#e86faa;font-family:'Fraunces',serif;" id="resStatus">—</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Estado</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grafica de barras por horas -->
+    <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em;">Concentracion por horas — C(t) = C₀ · e^(-kt)</div>
+    <div id="calcChart" style="display:flex;align-items:flex-end;gap:4px;height:80px;"></div>
+    <div id="calcLabels" style="display:flex;gap:4px;margin-top:4px;"></div>
+
+  </div>
+</div>
 
 <div id="toast" class="toast"></div>
 <script src="js/app.js"></script>
@@ -247,6 +304,86 @@ if (!requireAuth()) throw new Error('No auth');
   }
 
   loadMedications();
+
+  // Exponential decay model: C(t) = C0 * e^(-k*t)
+// where k = ln(2) / halfLife
+function calcConcentration() {
+  const C0       = parseFloat(document.getElementById('calcDose').value)        || 500;
+  const halfLife = parseFloat(document.getElementById('calcHalfLife').value)    || 6;
+  const Cmin     = parseFloat(document.getElementById('calcMinEffective').value) || 100;
+
+  // Decay constant
+  const k = Math.log(2) / halfLife;
+
+  // Time when concentration drops below minimum effective level
+  // Cmin = C0 * e^(-k*t) => t = -ln(Cmin/C0) / k
+  const nextDoseTime = -Math.log(Cmin / C0) / k;
+
+  // Current concentration (at t=0 just after taking dose)
+  const currentConc = C0;
+
+  // Status
+  let status = 'Activo';
+  let statusColor = '#4dbccc';
+  if (nextDoseTime <= 1) {
+    status = 'Tomar ya';
+    statusColor = '#e86faa';
+  } else if (nextDoseTime <= 2) {
+    status = 'Pronto';
+    statusColor = '#f59e0b';
+  }
+
+  document.getElementById('resNextDose').textContent =
+    nextDoseTime.toFixed(1) + ' hrs';
+  document.getElementById('resConc').textContent =
+    currentConc.toFixed(0) + ' mg';
+  document.getElementById('resStatus').textContent = status;
+  document.getElementById('resStatus').style.color = statusColor;
+
+  // Build chart — show concentration every hour up to 24h
+  const chart  = document.getElementById('calcChart');
+  const labels = document.getElementById('calcLabels');
+  chart.innerHTML  = '';
+  labels.innerHTML = '';
+
+  const maxHours = Math.min(Math.ceil(nextDoseTime * 1.5), 24);
+
+  for (let t = 0; t <= maxHours; t++) {
+    const ct = C0 * Math.exp(-k * t);
+    const pct = (ct / C0) * 100;
+
+    // Color based on level
+    let color = '#4dbccc';
+    if (ct < Cmin * 1.2) color = '#e86faa';
+    else if (ct < Cmin * 2) color = '#f59e0b';
+
+    // Bar
+    const bar = document.createElement('div');
+    bar.style.cssText = `
+      flex:1;height:${Math.max(pct, 3)}%;
+      background:${color};border-radius:4px 4px 0 0;
+      opacity:0.85;position:relative;transition:height 0.3s;
+      min-width:8px;cursor:pointer;
+    `;
+    bar.title = `t=${t}h → ${ct.toFixed(1)} mg`;
+
+    // Mark minimum effective line
+    if (Math.abs(ct - Cmin) < (C0 * 0.08)) {
+      bar.style.outline = '2px solid #e86faa';
+    }
+
+    chart.appendChild(bar);
+
+    // Label every 2 hours
+    const lbl = document.createElement('div');
+    lbl.style.cssText = `
+      flex:1;font-size:9px;color:rgba(255,255,255,0.3);
+      text-align:center;min-width:8px;
+    `;
+    lbl.textContent = t % 2 === 0 ? t + 'h' : '';
+    labels.appendChild(lbl);
+  }
+}
 </script>
 </body>
 </html>
