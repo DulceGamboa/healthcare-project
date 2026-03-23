@@ -32,8 +32,15 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/", "/*.html", "/css/**", "/js/**", "/img/**").permitAll()
-                .requestMatchers("/api/**").authenticated()
+                .requestMatchers(
+    "/", 
+    "/index.html",
+    "/**/*.html",
+    "/css/**",
+    "/js/**",
+    "/img/**",
+    "/**"
+).permitAll()
                 .anyRequest().permitAll()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -56,5 +63,7 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);
         return src;
+
+        
     }
 }
